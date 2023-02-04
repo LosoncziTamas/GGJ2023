@@ -7,7 +7,8 @@ public class SimplifiedPlayerController : MonoBehaviour
     
     [SerializeField, Range(0f, 1f)] private float _bounciness = 0.5f;
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
-    
+    [SerializeField] private Trail _trail;
+
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private Tile _closestTile;
     private Tile _lastWalkableTile;
@@ -200,6 +201,7 @@ public class SimplifiedPlayerController : MonoBehaviour
 
     private void BeginSliding()
     {
+        _trail.enabled = true;
         _slidingVelocity = _velocity.normalized * _maxSpeed;
         _polygonBuilder.Clear();
         _polygonBuilder.Add(_lastWalkableTile.transform.position);
@@ -207,6 +209,7 @@ public class SimplifiedPlayerController : MonoBehaviour
 
     private void EndSliding(Tile newTile)
     {
+        _trail.enabled = false;
         _polygonBuilder.Add(newTile.transform.position);
         _polygonBuilder.Build();
         var tilesToFlip = GetTilesInPolygon();

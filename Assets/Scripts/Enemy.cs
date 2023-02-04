@@ -7,6 +7,8 @@ public class Enemy : MonoBehaviour
     private Vector3 _velocity;
     private Tile _closestTile;
     private EnemyConfig _enemyConfig;
+
+    private bool _captured;
     
     public void Init(EnemyConfig enemyConfig)
     {
@@ -24,6 +26,10 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
+        if (_captured)
+        {
+            return;
+        }
         _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
         var desiredDisplacement = _velocity * Time.deltaTime;
         var newPosition = transform.localPosition + desiredDisplacement;
@@ -42,6 +48,10 @@ public class Enemy : MonoBehaviour
     
     private void EvaluateCollision(Collision other)
     {
+        if (_captured)
+        {
+            return;
+        }
         if (!other.gameObject.CompareTag(Tags.TileTag))
         {
             return;
@@ -54,6 +64,11 @@ public class Enemy : MonoBehaviour
         else if (newTile != _closestTile)
         {
             UpdateClosestTile(newTile, other);
+        }
+        if (_closestTile.TileType == TileType.Walkable)
+        {
+            Debug.Log("Captured");
+            _captured = true;
         }
     }
     
@@ -93,7 +108,8 @@ public class Enemy : MonoBehaviour
             contactNormal += normal;
         }
         contactNormal.Normalize();
-        _randomInput = contactNormal;
+        var reflection = Vector3.Reflect(_velocity, transform.InverseTransformDirection(contactNormal));
+        _randomInput = reflection.normalized;
     }
 
     public void Die()

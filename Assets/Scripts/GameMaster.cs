@@ -11,8 +11,8 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private List<LevelConfig> _levels;
 
     private LevelConfig _currentLevelConfig;
-    
-    public bool Running { get; private set; }
+
+    public bool Running { get; private set; } = true;
 
     private void Awake()
     {
@@ -43,6 +43,7 @@ public class GameMaster : MonoBehaviour
         {
             LifeLost();
         }
+        GUILayout.Label("Running " + Running);
     }
 
     public void LifeLost()
@@ -77,7 +78,7 @@ public class GameMaster : MonoBehaviour
     {
         Running = false;
         var currentLevelIndex = _levels.IndexOf(_currentLevelConfig);
-        if (currentLevelIndex < _levels.Count)
+        if (currentLevelIndex < _levels.Count - 1)
         {
             var nextLevel = _levels[currentLevelIndex + 1];
             StartCoroutine(ClearLevelAndStart(nextLevel));

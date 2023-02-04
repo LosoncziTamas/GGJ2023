@@ -5708,12 +5708,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7361c1a8c44d4037bece224a69d0e435, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _spawnArea:
-    serializedVersion: 2
-    x: -8.5
-    y: -5
-    width: 17
-    height: 10
   _enemyPrefab: {fileID: 5100094090692297502, guid: 807d325d50b09451fbfd719fd7e3c278, type: 3}
   _levels:
   - {fileID: 11400000, guid: c76677c403a9c4156975f2632f545f1c, type: 2}
@@ -15384,6 +15378,10 @@ PrefabInstance:
     - target: {fileID: 1302512360474462167, guid: 2499a12ab62b64a1cb81f9868cf5e1a6, type: 3}
       propertyPath: m_Name
       value: Main Screen
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302512360474462167, guid: 2499a12ab62b64a1cb81f9868cf5e1a6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1302512360474462171, guid: 2499a12ab62b64a1cb81f9868cf5e1a6, type: 3}
       propertyPath: m_Pivot.x

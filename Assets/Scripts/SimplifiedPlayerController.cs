@@ -78,14 +78,17 @@ public class SimplifiedPlayerController : MonoBehaviour
             var directionChanged = false;
             var slidingLeft = velocity.x < 0;
             var slidingRight = velocity.x > 0;
+            var includerOffset = new Vector3();
             if ((slidingLeft || slidingRight) && playerInput.y > 0)
             {
                 _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
+                includerOffset = new Vector3(0, 0, -0.5f);
                 directionChanged = true;
             }
             else if ((slidingLeft || slidingRight) && playerInput.y < 0)
             {
                 _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
+                includerOffset = new Vector3(0, 0, 0.5f);
                 directionChanged = true;
             }
             var slidingUp = velocity.z > 0;
@@ -93,16 +96,18 @@ public class SimplifiedPlayerController : MonoBehaviour
             if ((slidingUp || slidingDown) && playerInput.x > 0)
             {
                 _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
+                includerOffset = new Vector3(-0.5f, 0.5f, 0.0f);
                 directionChanged = true;
             }
             else if ((slidingUp || slidingDown) && playerInput.x < 0)
             {
                 _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
+                includerOffset = new Vector3(0.5f, 0, 0.0f);
                 directionChanged = true;
             }
             if (directionChanged)
             {
-                _polygonBuilder.Add(_closestTile.transform.position);
+                _polygonBuilder.Add(_closestTile.transform.position + includerOffset);
                 _slidingVelocity = _velocity;
             }
         }

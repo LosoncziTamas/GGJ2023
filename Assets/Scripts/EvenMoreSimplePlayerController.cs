@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class EvenMoreSimplePlayerController : MonoBehaviour
 {
-    private const string TileTag = "Tile";
-
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
@@ -14,9 +12,11 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
     private Tile _lastWalkableTile;
     private PolygonBuilder _polygonBuilder;
     private List<Tile> _allTiles;
-    private bool IsSliding => _slidingVelocity.HasValue;
     private Vector3? _slidingVelocity;
     private Vector3 _velocity;
+    private Vector2 _lastPlayerInput;
+    
+    private bool IsSliding => _slidingVelocity.HasValue;
     
     private void Start()
     {
@@ -27,7 +27,9 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
     private void OnGUI()
     {
         GUILayout.Label("_velocity " + _velocity);
-        GUILayout.Label("_lastPlayerInput " + _lastPlayerInput);
+        GUILayout.Label("_lastWalkableTile " + _lastWalkableTile.transform.position);
+        GUILayout.Label("_targetTile " + _targetTile.transform.position);
+        GUILayout.Label("_isMoving " + _isMoving);
     }
 
     private void Update()
@@ -58,10 +60,71 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         }
         transform.localPosition = newPosition;
     }
-
-    private Vector2 _lastPlayerInput;
     
     private Vector3 VelocityBasedMovement()
+    {
+        var playerInput = ReadInput();
+        _lastPlayerInput = playerInput;
+        if (_slidingVelocity.HasValue)
+        {
+            HandleSlidingMovement(playerInput, _slidingVelocity.Value);
+        }
+        else
+        {
+            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
+        }
+        var desiredDisplacement = _velocity * Time.deltaTime;
+        return transform.localPosition + desiredDisplacement;
+    }
+    
+    private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
+    {
+        if (Mathf.Approximately(playerInput.magnitude, 0.0f))
+        {
+            _velocity = velocity;
+        }
+        else
+        {
+            var directionChanged = false;
+            var slidingLeft = velocity.x < 0;
+            var slidingRight = velocity.x > 0;
+            // To make sure tiles are included in the collider.
+            var includerOffset = new Vector3();
+            if ((slidingLeft || slidingRight) && playerInput.y > 0)
+            {
+                _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
+                includerOffset = new Vector3(0, 0, -0.5f);
+                directionChanged = true;
+            }
+            else if ((slidingLeft || slidingRight) && playerInput.y < 0)
+            {
+                _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
+                includerOffset = new Vector3(0, 0, 0.5f);
+                directionChanged = true;
+            }
+            var slidingUp = velocity.z > 0;
+            var slidingDown = velocity.z < 0;
+            if ((slidingUp || slidingDown) && playerInput.x > 0)
+            {
+                _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
+                includerOffset = new Vector3(-0.5f, 0.5f, 0.0f);
+                directionChanged = true;
+            }
+            else if ((slidingUp || slidingDown) && playerInput.x < 0)
+            {
+                _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
+                includerOffset = new Vector3(0.5f, 0, 0.0f);
+                directionChanged = true;
+            }
+            if (directionChanged)
+            {
+                _polygonBuilder.Add(_targetTile.transform.position + includerOffset);
+                _slidingVelocity = _velocity;
+            }
+        }
+    }
+
+    private Vector2 ReadInput()
     {
         var playerInput = Vector2.zero;
         playerInput.x = Input.GetAxis("Horizontal");
@@ -81,10 +144,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         {
             playerInput = _lastPlayerInput;
         }
-        _lastPlayerInput = playerInput;
-        _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
-        var desiredDisplacement = _velocity * Time.deltaTime;
-        return transform.localPosition + desiredDisplacement;
+        return playerInput;
     }
 
     private IEnumerator MoveToTile(Tile targetTile)
@@ -102,6 +162,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
             {
                 transform.position = targetPosition;
                 _isMoving = false;
+                // TODO: do something about this
                 yield break;
             }
             var newPos = Vector3.MoveTowards(transform.position, targetPosition, _maxSpeed * Time.deltaTime);
@@ -126,7 +187,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         {
             return;
         }
-        if (!other.CompareTag(TileTag))
+        if (!other.CompareTag(Tags.TileTag))
         {
             return;
         }

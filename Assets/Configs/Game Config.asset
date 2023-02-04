@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: Game Config
   m_EditorClassIdentifier: 
   TimeBetweenTrailSpawn: 0.02
+  EnemyMaxSpeed: 1.8

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class SimplifiedPlayerController : MonoBehaviour
@@ -13,8 +15,15 @@ public class SimplifiedPlayerController : MonoBehaviour
     private Tile _closestTile;
     private Tile _lastWalkableTile;
     private bool _sliding;
+    private List<Tile> _allTiles;
+    private PolygonBuilder _polygonBuilder;
     
-    
+    private void Start()
+    {
+        _allTiles = new List<Tile>(FindObjectsOfType<Tile>(includeInactive: true));
+        _polygonBuilder = FindObjectOfType<PolygonBuilder>();
+    }
+
     private void Update()
     {
         var newPosition = VelocityBasedMovement();
@@ -60,6 +69,23 @@ public class SimplifiedPlayerController : MonoBehaviour
     {
         EvaluateTrigger(other);
     }
+    
+    private void EvaluateTrigger(Collider other)
+    {
+        if (!other.CompareTag(TileTag))
+        {
+            return;
+        }
+        var newTile = other.GetComponent<Tile>();
+        if (_closestTile == null)
+        {
+            InitializeClosestTile(newTile);
+        }
+        else if (newTile != _closestTile)
+        {
+            UpdateClosestTile(newTile);
+        }
+    }
 
     private void OnGUI()
     {
@@ -72,44 +98,75 @@ public class SimplifiedPlayerController : MonoBehaviour
         {
             GUILayout.Label("_lastWalkableTile " + _lastWalkableTile.transform.position);
         }
+
+        if (GUILayout.Button("Reset"))
+        {
+            foreach (var tile in _allTiles)
+            {
+                tile.SetMarkEnabled(false);
+            }
+        }
+        if (GUILayout.Button("Build polygon"))
+        {
+            _polygonBuilder.Build(new List<Vector3> {Vector3.zero});
+        }
     }
 
-    private void EvaluateTrigger(Collider other)
+    private void InitializeClosestTile(Tile newTile)
     {
-        if (!other.CompareTag(TileTag))
+        _closestTile = newTile;
+        if (newTile.TileType == TileType.Walkable)
         {
-            return;
+            _sliding = false;
+            _lastWalkableTile = newTile;
         }
-        var newTile = other.GetComponent<Tile>();
-        if (_closestTile == null)
+        _closestTile.SetHighlightEnabled(true);
+    }
+
+    private void UpdateClosestTile(Tile newTile)
+    {
+        var selfPos = transform.position;
+        var oldDistance = Vector3.Distance(_closestTile.transform.position, selfPos);
+        var newDistance = Vector3.Distance(newTile.transform.position, selfPos);
+        if (newDistance < oldDistance)
         {
+            _closestTile.SetHighlightEnabled(false);
+            var lastTileWasWalkable = _closestTile.TileType == TileType.Walkable;
             _closestTile = newTile;
             if (newTile.TileType == TileType.Walkable)
             {
+                if (_sliding)
+                {
+                    var start = _lastWalkableTile.transform.position;
+                    var end = _lastWalkableTile.transform.position;
+                    _polygonBuilder.Build(new List<Vector3> {start, end});
+                    Debug.Log("Slice between " + start + " and " + end);
+                    newTile.SetMarkEnabled(true);
+                }
+                _sliding = false;
                 _lastWalkableTile = newTile;
+            }
+            else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
+            {
+                _sliding = true;
+                _lastWalkableTile.SetMarkEnabled(true);
             }
             _closestTile.SetHighlightEnabled(true);
         }
-        else if (newTile != _closestTile)
+    }
+    
+
+    
+    private List<Tile> GetTilesInArea(Rect rect)
+    {
+        var result = new List<Tile>();
+        foreach (var tile in _allTiles)
         {
-            var selfPos = transform.position;
-            var oldDistance = Vector3.Distance(_closestTile.transform.position, selfPos);
-            var newDistance = Vector3.Distance(newTile.transform.position, selfPos);
-            if (newDistance < oldDistance)
+            if (rect.Contains(tile.transform.position))
             {
-                _closestTile.SetHighlightEnabled(false);
-                var lastTileWasWalkable = _closestTile.TileType == TileType.Walkable;
-                _closestTile = newTile;
-                if (newTile.TileType == TileType.Walkable)
-                {
-                    _lastWalkableTile = newTile;
-                }
-                else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
-                {
-                    _sliding = true;
-                }
-                _closestTile.SetHighlightEnabled(true);
+                result.Add(tile);
             }
         }
+        return result;
     }
 }

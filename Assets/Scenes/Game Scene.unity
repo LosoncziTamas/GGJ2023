@@ -518,5 +518,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: Playfield
       objectReference: {fileID: 0}
+    - target: {fileID: 6111759810545820224, guid: 99898aadd653645d9a059370989c860e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111759810545820224, guid: 99898aadd653645d9a059370989c860e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111759810545820224, guid: 99898aadd653645d9a059370989c860e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111759810545820224, guid: 99898aadd653645d9a059370989c860e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111759810545820224, guid: 99898aadd653645d9a059370989c860e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 99898aadd653645d9a059370989c860e, type: 3}

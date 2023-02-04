@@ -9,7 +9,7 @@ public class Enemy : MonoBehaviour
     private EnemyConfig _enemyConfig;
 
     private bool _captured;
-    
+
     public void Init(EnemyConfig enemyConfig)
     {
         transform.position = enemyConfig.SpawnLocation;
@@ -67,11 +67,37 @@ public class Enemy : MonoBehaviour
         }
         if (_closestTile.TileType == TileType.Walkable)
         {
-            Debug.Log("Captured");
-            _captured = true;
+            _captured = CheckCapture();
         }
     }
-    
+
+    private bool CheckCapture()
+    {
+        // TODO: optimize
+        var hitColliders = Physics.OverlapBox(gameObject.transform.position, transform.localScale, Quaternion.identity);
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.gameObject.CompareTag(Tags.TileTag))
+            {
+                var nearbyTile = hitCollider.GetComponent<Tile>();
+                if (nearbyTile.TileType == TileType.Slippery)
+                {
+                    Debug.Log("CheckCapture: false");
+                    return false;
+                }
+            }
+        }
+        Debug.Log("CheckCapture: true");
+        return true;
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position, transform.localScale);
+    }
+
     private void InitializeTargetTile(Tile newTile, Collision collision)
     {
         _closestTile = newTile;
@@ -79,7 +105,10 @@ public class Enemy : MonoBehaviour
         {
             ChangeDirection(collision);
         }
-        _closestTile.SetHighlightEnabled(true);
+        else
+        {
+            _closestTile.SetHighlightEnabled(true);
+        }
     }
     
     private void UpdateClosestTile(Tile newTile, Collision collision)

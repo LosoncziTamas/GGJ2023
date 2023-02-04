@@ -5716,8 +5716,8 @@ MonoBehaviour:
     height: 10
   _enemyPrefab: {fileID: 5100094090692297502, guid: 807d325d50b09451fbfd719fd7e3c278, type: 3}
   _levels:
-  - {fileID: 11400000, guid: 57222bece5331498db5b9b71fe17e67d, type: 2}
   - {fileID: 11400000, guid: c76677c403a9c4156975f2632f545f1c, type: 2}
+  - {fileID: 11400000, guid: 57222bece5331498db5b9b71fe17e67d, type: 2}
 --- !u!4 &734145622
 Transform:
   m_ObjectHideFlags: 0

@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class SimplifiedPlayerController : MonoBehaviour
@@ -106,9 +104,18 @@ public class SimplifiedPlayerController : MonoBehaviour
                 tile.SetMarkEnabled(false);
             }
         }
-        if (GUILayout.Button("Build polygon"))
+        if (GUILayout.Button("Clear"))
         {
-            _polygonBuilder.Build(new List<Vector3> {Vector3.zero});
+            _polygonBuilder.Clear();
+        }
+        if (GUILayout.Button("Add"))
+        {
+            _polygonBuilder.Add(transform.position);
+        }
+        if (GUILayout.Button("Inside"))
+        {
+            var result = _polygonBuilder.IsInside(transform.position);
+            Debug.Log("inside: " + result);
         }
     }
 

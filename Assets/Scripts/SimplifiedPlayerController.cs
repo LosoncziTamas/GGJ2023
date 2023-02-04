@@ -145,13 +145,6 @@ public class SimplifiedPlayerController : MonoBehaviour
         GUILayout.Label("_sliding " + IsSliding);
         GUILayout.Label("_slidingVelocity " + _slidingVelocity);
         
-        if (GUILayout.Button("Reset"))
-        {
-            foreach (var tile in _allTiles)
-            {
-                tile.SetMarkEnabled(false);
-            }
-        }
         if (GUILayout.Button("Clear"))
         {
             _polygonBuilder.Clear();
@@ -208,9 +201,8 @@ public class SimplifiedPlayerController : MonoBehaviour
     private void BeginSliding()
     {
         _slidingVelocity = _velocity.normalized * _maxSpeed;
-        // _polygonBuilder.Clear();
+        _polygonBuilder.Clear();
         _polygonBuilder.Add(_lastWalkableTile.transform.position);
-        _lastWalkableTile.SetMarkEnabled(true);
     }
 
     private void EndSliding(Tile newTile)
@@ -220,10 +212,9 @@ public class SimplifiedPlayerController : MonoBehaviour
         var tilesToFlip = GetTilesInPolygon();
         foreach (var tile in tilesToFlip)
         {
-            tile.SetHighlightEnabled(true);
+            tile.MarkResolved();
         }
         // _polygonBuilder.Clear();
-        newTile.SetMarkEnabled(true);
     }
     
     private List<Tile> GetTilesInPolygon()

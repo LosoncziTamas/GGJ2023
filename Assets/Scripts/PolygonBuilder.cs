@@ -32,8 +32,9 @@ public class PolygonBuilder : MonoBehaviour
 
     public void Clear()
     {
+        _positions.Clear();
         _polygonCollider2D.pathCount = 0;
-        _polygonCollider2D.points = new Vector2[] { };
+        _polygonCollider2D.points = null;
     }
     
     public void Build()

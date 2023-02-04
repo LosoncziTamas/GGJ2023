@@ -57,7 +57,7 @@ public class SimplifiedPlayerController : MonoBehaviour
         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
         if (_slidingVelocity.HasValue)
         {
-            HandleSliding(playerInput, _slidingVelocity.Value);
+            HandleSlidingMovement(playerInput, _slidingVelocity.Value);
         }
         else
         {
@@ -67,7 +67,7 @@ public class SimplifiedPlayerController : MonoBehaviour
         return transform.localPosition + desiredDisplacement;
     }
 
-    private void HandleSliding(Vector2 playerInput, Vector3 velocity)
+    private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
     {
         if (Mathf.Approximately(playerInput.magnitude, 0.0f))
         {
@@ -102,6 +102,7 @@ public class SimplifiedPlayerController : MonoBehaviour
             }
             if (directionChanged)
             {
+                _polygonBuilder.Add(_closestTile.transform.position);
                 _slidingVelocity = _velocity;
             }
         }
@@ -186,30 +187,46 @@ public class SimplifiedPlayerController : MonoBehaviour
             {
                 if (IsSliding)
                 {
-                    _polygonBuilder.Add(newTile.transform.position);
-                    _polygonBuilder.Build();
-                    newTile.SetMarkEnabled(true);
+                    EndSliding(newTile);
                 }
                 _slidingVelocity = null;
                 _lastWalkableTile = newTile;
             }
             else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
             {
-                _slidingVelocity = _velocity.normalized * _maxSpeed;
-                _polygonBuilder.Clear();
-                _polygonBuilder.Add(_lastWalkableTile.transform.position);
-                _lastWalkableTile.SetMarkEnabled(true);
+                BeginSliding();
             }
             _closestTile.SetHighlightEnabled(true);
         }
     }
+
+    private void BeginSliding()
+    {
+        _slidingVelocity = _velocity.normalized * _maxSpeed;
+        // _polygonBuilder.Clear();
+        _polygonBuilder.Add(_lastWalkableTile.transform.position);
+        _lastWalkableTile.SetMarkEnabled(true);
+    }
+
+    private void EndSliding(Tile newTile)
+    {
+        _polygonBuilder.Add(newTile.transform.position);
+        _polygonBuilder.Build();
+        var tilesToFlip = GetTilesInPolygon();
+        foreach (var tile in tilesToFlip)
+        {
+            tile.SetHighlightEnabled(true);
+        }
+        // _polygonBuilder.Clear();
+        newTile.SetMarkEnabled(true);
+    }
     
-    private List<Tile> GetTilesInArea(Rect rect)
+    private List<Tile> GetTilesInPolygon()
     {
         var result = new List<Tile>();
         foreach (var tile in _allTiles)
         {
-            if (rect.Contains(tile.transform.position))
+            if (_polygonBuilder.IsInside(tile.transform.position))
             {
                 result.Add(tile);
             }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -14,7 +15,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 _desiredOffset;
     private Vector3 _position;
     private int _walkableCount;
-    private int _slipperyCount;
+    private int _slipperyCount;       
+    private int _stepsSinceLastWalkable;
+    private int _stepsSinceLastSlippery;
 
     private bool OnWalkableSide => _walkableCount > 0;
 
@@ -40,6 +43,16 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        _stepsSinceLastSlippery++;
+        _stepsSinceLastWalkable++;
+        if (_slipperyCount == 0 && _walkableCount > 0)
+        {
+            _stepsSinceLastWalkable = 0;
+        }
+        else if (_slipperyCount > 0)
+        {
+            _stepsSinceLastSlippery = 0;
+        }
         _position = _rigidBody.position;
         var acceleration = _maxAcceleration;
         var maxSpeedChange = acceleration * Time.deltaTime;
@@ -47,6 +60,14 @@ public class PlayerController : MonoBehaviour
         _position = Vector3.MoveTowards(_position, desiredPosition, maxSpeedChange);
         _rigidBody.position = _position;
         ResetState();
+    }
+
+    private void OnGUI()
+    {
+        GUILayout.Label("_stepsSinceLastSlippery " + _stepsSinceLastSlippery);
+        GUILayout.Label("_stepsSinceLastWalkable " + _stepsSinceLastWalkable);
+        GUILayout.Label("_slipperyCount " + _slipperyCount);
+        GUILayout.Label("_walkableCount " + _walkableCount);
     }
 
     private void OnCollisionEnter(Collision collision)

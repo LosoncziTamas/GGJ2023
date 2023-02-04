@@ -67,6 +67,12 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator ClearLevelAndStart(LevelConfig levelConfig)
     {
+        yield return ClearLevel();
+        InitLevel(levelConfig);
+    }
+
+    private IEnumerator ClearLevel()
+    {
         var allTiles = FindObjectsOfType<Tile>();
         var player = FindObjectOfType<PlayerController>();
         player.ResetToDefault();
@@ -80,7 +86,6 @@ public class GameMaster : MonoBehaviour
             tile.ResetToDefault();
             yield return new WaitForSeconds(0.001f);
         }
-        InitLevel(levelConfig);
     }
 
     private void Update()
@@ -108,7 +113,11 @@ public class GameMaster : MonoBehaviour
 
     private void FinishGameWithResult(GameResult gameResult)
     {
-        if (!_gameCompletionSource.TrySetResult(gameResult))
+        if (_gameCompletionSource.TrySetResult(gameResult))
+        {
+            StartCoroutine(ClearLevel());
+        }
+        else
         {
             Debug.LogError("Game already finished.");
         }

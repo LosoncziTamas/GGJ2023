@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Configs;
 using UnityEngine;
 
 public class Trail : MonoBehaviour

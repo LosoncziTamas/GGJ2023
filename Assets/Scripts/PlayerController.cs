@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (_isMoving)
+        if (_isMoving || !GameMaster.Instance.Running)
         {
             return;
         }

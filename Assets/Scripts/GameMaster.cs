@@ -1,27 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Configs;
 using UnityEngine;
 
 public class GameMaster : MonoBehaviour
 {
     public static GameMaster Instance;
     
-    [SerializeField] private Rect _spawnArea = new(-8.5f, -5f, 17f, 10f);
     [SerializeField] private Enemy _enemyPrefab;
     [SerializeField] private List<LevelConfig> _levels;
 
     private LevelConfig _currentLevelConfig;
 
-    public bool Running { get; private set; } = true;
+    private TaskCompletionSource<GameResult> _gameCompletionSource;
+
+    public bool Running { get; private set; }
 
     private void Awake()
     {
         Instance = this;
     }
 
-    private IEnumerator Start()
+    public Task<GameResult> StartGame()
     {
-        yield return new WaitForSeconds(0.4f);
+        _gameCompletionSource = new TaskCompletionSource<GameResult>();
+        StartFirstLevel();
+        return _gameCompletionSource.Task;
+    }
+
+    private void StartFirstLevel()
+    {
         Debug.Assert(_levels is {Count: > 0});
         InitLevel(_levels[0]);
     }
@@ -74,6 +83,14 @@ public class GameMaster : MonoBehaviour
         InitLevel(levelConfig);
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            FinishGameWithResult(GameResult.Exited);
+        }
+    }
+
     public void MoveToNextLevel()
     {
         Running = false;
@@ -85,8 +102,15 @@ public class GameMaster : MonoBehaviour
         }
         else
         {
-            Debug.Log("Congratulations!");
-            // TODO: Congrats panel!
+            FinishGameWithResult(GameResult.Completed);
+        }
+    }
+
+    private void FinishGameWithResult(GameResult gameResult)
+    {
+        if (!_gameCompletionSource.TrySetResult(gameResult))
+        {
+            Debug.LogError("Game already finished.");
         }
     }
 }

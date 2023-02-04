@@ -30,6 +30,8 @@ public class Trail : MonoBehaviour
         if (_accumulator > _gameConfig.TimeBetweenTrailSpawn)
         {
             _accumulator = 0;
+            // TODO: randomize
+            // TODO: pool
             var trail = Instantiate(_trailPrefab, transform.position, Quaternion.identity);
             _trailObjects.Add(trail);
         }

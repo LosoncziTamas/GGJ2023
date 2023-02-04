@@ -145,7 +145,6 @@ public class SimplifiedPlayerController : MonoBehaviour
     {
         GUILayout.Label("_sliding " + IsSliding);
         GUILayout.Label("_slidingVelocity " + _slidingVelocity);
-        
         if (GUILayout.Button("Clear"))
         {
             _polygonBuilder.Clear();

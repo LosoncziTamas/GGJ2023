@@ -9,14 +9,11 @@ public class PolygonBuilder : MonoBehaviour
     [SerializeField] private Transform _topRightCorner;
     [SerializeField] private Transform _bottomRightCorner;
 
-    private List<Vector2> _positions;
+    private readonly List<Vector2> _positions = new List<Vector2>();
 
     public void Add(Vector3 position)
     {
-        var points = new List<Vector2>(){position};
-        points.Add(new Vector2(_topLeftCorner.position.x, _topLeftCorner.position.z));
-        points.Add(new Vector2(_bottomLeftCorner.position.x, _bottomLeftCorner.position.z));
-        _polygonCollider2D.points = points.ToArray();
+        _positions.Add(position);
     }
 
     public void Clear()
@@ -25,17 +22,19 @@ public class PolygonBuilder : MonoBehaviour
         _polygonCollider2D.points = new Vector2[] { };
     }
     
-    public void Build(List<Vector3> points)
+    public void Build()
     {
-       /* var newPoints = new List<Vector2>();
-        foreach (var point in points)
+        if (_positions.Count < 4)
         {
-            var vec2 = new Vector2(point.x, point.y);
-            newPoints.Add(vec2);
+            // TODO: adding algorithm
+            // _positions.Add(new Vector2(_topLeftCorner.position.x, _topLeftCorner.position.z));
+            _positions.Add(new Vector2(_bottomLeftCorner.position.x, _bottomLeftCorner.position.z));
         }
-        // TODO: remove test data
-        newPoints.Add(new Vector2(_topLeftCorner.position.x, _topLeftCorner.position.z));
-        newPoints.Add(new Vector2(_bottomLeftCorner.position.x, _bottomLeftCorner.position.z));*/
+        else
+        {
+            
+        }
+        _polygonCollider2D.points = _positions.ToArray();
     }
 
     public bool IsInside(Vector3 position)

@@ -9,12 +9,14 @@ public class SimplifiedPlayerController : MonoBehaviour
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
-
     private Tile _closestTile;
     private Tile _lastWalkableTile;
-    private bool _sliding;
     private List<Tile> _allTiles;
     private PolygonBuilder _polygonBuilder;
+    private Vector3 _velocity;
+    private Vector3? _slidingVelocity;
+
+    private bool IsSliding => _slidingVelocity.HasValue;
     
     private void Start()
     {
@@ -53,9 +55,56 @@ public class SimplifiedPlayerController : MonoBehaviour
         playerInput.x = Input.GetAxis("Horizontal");
         playerInput.y = Input.GetAxis("Vertical");
         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
-        var velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
-        var desiredDisplacement = velocity * Time.deltaTime;
+        if (_slidingVelocity.HasValue)
+        {
+            HandleSliding(playerInput, _slidingVelocity.Value);
+        }
+        else
+        {
+            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
+        }
+        var desiredDisplacement = _velocity * Time.deltaTime;
         return transform.localPosition + desiredDisplacement;
+    }
+
+    private void HandleSliding(Vector2 playerInput, Vector3 velocity)
+    {
+        if (Mathf.Approximately(playerInput.magnitude, 0.0f))
+        {
+            _velocity = velocity;
+        }
+        else
+        {
+            var directionChanged = false;
+            var slidingLeft = velocity.x < 0;
+            var slidingRight = velocity.x > 0;
+            if ((slidingLeft || slidingRight) && playerInput.y > 0)
+            {
+                _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
+                directionChanged = true;
+            }
+            else if ((slidingLeft || slidingRight) && playerInput.y < 0)
+            {
+                _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
+                directionChanged = true;
+            }
+            var slidingUp = velocity.z > 0;
+            var slidingDown = velocity.z < 0;
+            if ((slidingUp || slidingDown) && playerInput.x > 0)
+            {
+                _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
+                directionChanged = true;
+            }
+            else if ((slidingUp || slidingDown) && playerInput.x < 0)
+            {
+                _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
+                directionChanged = true;
+            }
+            if (directionChanged)
+            {
+                _slidingVelocity = _velocity;
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -87,16 +136,9 @@ public class SimplifiedPlayerController : MonoBehaviour
 
     private void OnGUI()
     {
-        GUILayout.Label("_sliding " + _sliding);
-        if (_closestTile != null)
-        {
-            GUILayout.Label("_closestTile " + _closestTile.transform.position);
-        }
-        if (_lastWalkableTile != null)
-        {
-            GUILayout.Label("_lastWalkableTile " + _lastWalkableTile.transform.position);
-        }
-
+        GUILayout.Label("_sliding " + IsSliding);
+        GUILayout.Label("_slidingVelocity " + _slidingVelocity);
+        
         if (GUILayout.Button("Reset"))
         {
             foreach (var tile in _allTiles)
@@ -124,7 +166,7 @@ public class SimplifiedPlayerController : MonoBehaviour
         _closestTile = newTile;
         if (newTile.TileType == TileType.Walkable)
         {
-            _sliding = false;
+            _slidingVelocity = null;
             _lastWalkableTile = newTile;
         }
         _closestTile.SetHighlightEnabled(true);
@@ -142,27 +184,25 @@ public class SimplifiedPlayerController : MonoBehaviour
             _closestTile = newTile;
             if (newTile.TileType == TileType.Walkable)
             {
-                if (_sliding)
+                if (IsSliding)
                 {
-                    var start = _lastWalkableTile.transform.position;
-                    var end = _lastWalkableTile.transform.position;
-                    _polygonBuilder.Build(new List<Vector3> {start, end});
-                    Debug.Log("Slice between " + start + " and " + end);
+                    _polygonBuilder.Add(newTile.transform.position);
+                    _polygonBuilder.Build();
                     newTile.SetMarkEnabled(true);
                 }
-                _sliding = false;
+                _slidingVelocity = null;
                 _lastWalkableTile = newTile;
             }
             else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
             {
-                _sliding = true;
+                _slidingVelocity = _velocity.normalized * _maxSpeed;
+                _polygonBuilder.Clear();
+                _polygonBuilder.Add(_lastWalkableTile.transform.position);
                 _lastWalkableTile.SetMarkEnabled(true);
             }
             _closestTile.SetHighlightEnabled(true);
         }
     }
-    
-
     
     private List<Tile> GetTilesInArea(Rect rect)
     {

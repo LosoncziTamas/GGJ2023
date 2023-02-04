@@ -54,13 +54,7 @@ public class PolygonBuilder : MonoBehaviour
         else if (positionCount is < 4 and > 0)
         {
             // TODO: adding algorithm
-            
-
             Add(_bottomLeft);
-        }
-        else
-        {
-            
         }
         _polygonCollider2D.points = _positions.ToArray();
     }
@@ -70,7 +64,7 @@ public class PolygonBuilder : MonoBehaviour
         var displacement = endPos - startPos;
         var horizontal = Mathf.Abs(displacement.x) > Mathf.Abs(displacement.y);
         var leftToRight = displacement.x > 0;
-        var rightToLeft = displacement.x > 0;
+        var bottomToTop = displacement.y > 0;
         if (horizontal)
         {
             var yTopDistance = Mathf.Abs(startPos.y - _topLeft.y);
@@ -88,7 +82,18 @@ public class PolygonBuilder : MonoBehaviour
         }
         else
         {
-                
+            var xLeftDistance = Mathf.Abs(startPos.x - _bottomLeft.x);
+            var xRightDistance = Mathf.Abs(startPos.x - _bottomRight.x);
+            if (xLeftDistance < xRightDistance)
+            {
+                Add(bottomToTop ? _topLeft : _bottomLeft);
+                Add(bottomToTop ? _bottomLeft : _topLeft);
+            }
+            else
+            {
+                Add(bottomToTop ? _topRight : _bottomRight);
+                Add(bottomToTop ? _bottomRight : _topRight);
+            }
         }
     }
 

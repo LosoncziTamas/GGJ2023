@@ -288,7 +288,7 @@ public class PlayerController : MonoBehaviour
         }
         if (walkableCount == _allTiles.Count)
         {
-            Debug.Log("Victory");
+            GameMaster.Instance.MoveToNextLevel();
         }
     }
     

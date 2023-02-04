@@ -8,8 +8,9 @@ public class GameMaster : MonoBehaviour
     
     [SerializeField] private Rect _spawnArea = new(-8.5f, -5f, 17f, 10f);
     [SerializeField] private Enemy _enemyPrefab;
-    [SerializeField] private List<Transform> _spawnLocations;
     [SerializeField] private List<LevelConfig> _levels;
+
+    private LevelConfig _currentLevelConfig;
     
     public bool Running { get; private set; }
 
@@ -25,8 +26,9 @@ public class GameMaster : MonoBehaviour
         InitLevel(_levels[0]);
     }
 
-    public void InitLevel(LevelConfig levelConfig)
+    private void InitLevel(LevelConfig levelConfig)
     {
+        _currentLevelConfig = levelConfig;
         Running = true;
         foreach (var enemyConfig in levelConfig.Enemies)
         {
@@ -50,10 +52,10 @@ public class GameMaster : MonoBehaviour
             return;
         }
         Running = false;
-        StartCoroutine(ResetLevel());
+        StartCoroutine(ClearLevelAndStart(_currentLevelConfig));
     }
 
-    private IEnumerator ResetLevel()
+    private IEnumerator ClearLevelAndStart(LevelConfig levelConfig)
     {
         var allTiles = FindObjectsOfType<Tile>();
         var player = FindObjectOfType<PlayerController>();
@@ -68,6 +70,22 @@ public class GameMaster : MonoBehaviour
             tile.ResetToDefault();
             yield return new WaitForSeconds(0.001f);
         }
-        Running = true;
+        InitLevel(levelConfig);
+    }
+
+    public void MoveToNextLevel()
+    {
+        Running = false;
+        var currentLevelIndex = _levels.IndexOf(_currentLevelConfig);
+        if (currentLevelIndex < _levels.Count)
+        {
+            var nextLevel = _levels[currentLevelIndex + 1];
+            StartCoroutine(ClearLevelAndStart(nextLevel));
+        }
+        else
+        {
+            Debug.Log("Congratulations!");
+            // TODO: Congrats panel!
+        }
     }
 }

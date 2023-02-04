@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class SimplifiedPlayerController : MonoBehaviour
@@ -10,6 +11,9 @@ public class SimplifiedPlayerController : MonoBehaviour
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
 
     private Tile _closestTile;
+    private Tile _lastWalkableTile;
+    private bool _sliding;
+    
     
     private void Update()
     {
@@ -43,8 +47,8 @@ public class SimplifiedPlayerController : MonoBehaviour
         playerInput.y = Input.GetAxis("Vertical");
         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
         var velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
-        var displacement = velocity * Time.deltaTime;
-        return transform.localPosition + displacement;
+        var desiredDisplacement = velocity * Time.deltaTime;
+        return transform.localPosition + desiredDisplacement;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -57,6 +61,19 @@ public class SimplifiedPlayerController : MonoBehaviour
         EvaluateTrigger(other);
     }
 
+    private void OnGUI()
+    {
+        GUILayout.Label("_sliding " + _sliding);
+        if (_closestTile != null)
+        {
+            GUILayout.Label("_closestTile " + _closestTile.transform.position);
+        }
+        if (_lastWalkableTile != null)
+        {
+            GUILayout.Label("_lastWalkableTile " + _lastWalkableTile.transform.position);
+        }
+    }
+
     private void EvaluateTrigger(Collider other)
     {
         if (!other.CompareTag(TileTag))
@@ -67,6 +84,10 @@ public class SimplifiedPlayerController : MonoBehaviour
         if (_closestTile == null)
         {
             _closestTile = newTile;
+            if (newTile.TileType == TileType.Walkable)
+            {
+                _lastWalkableTile = newTile;
+            }
             _closestTile.SetHighlightEnabled(true);
         }
         else if (newTile != _closestTile)
@@ -77,7 +98,16 @@ public class SimplifiedPlayerController : MonoBehaviour
             if (newDistance < oldDistance)
             {
                 _closestTile.SetHighlightEnabled(false);
+                var lastTileWasWalkable = _closestTile.TileType == TileType.Walkable;
                 _closestTile = newTile;
+                if (newTile.TileType == TileType.Walkable)
+                {
+                    _lastWalkableTile = newTile;
+                }
+                else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
+                {
+                    _sliding = true;
+                }
                 _closestTile.SetHighlightEnabled(true);
             }
         }

@@ -9,7 +9,7 @@ public class Trail : MonoBehaviour
     private float _startTime;
     private float _accumulator;
 
-    private List<GameObject> _trailObjects = new();
+    private readonly List<GameObject> _trailObjects = new();
 
     private void OnEnable()
     {

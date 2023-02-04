@@ -9,6 +9,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Rect _spawnArea = new(-8.5f, -5f, 17f, 10f);
     [SerializeField] private Enemy _enemyPrefab;
     [SerializeField] private List<Transform> _spawnLocations;
+    [SerializeField] private List<LevelConfig> _levels;
     
     public bool Running { get; private set; }
 
@@ -20,8 +21,18 @@ public class GameMaster : MonoBehaviour
     private IEnumerator Start()
     {
         yield return new WaitForSeconds(0.4f);
+        Debug.Assert(_levels is {Count: > 0});
+        InitLevel(_levels[0]);
+    }
+
+    public void InitLevel(LevelConfig levelConfig)
+    {
         Running = true;
-        SpawnEnemies(1);
+        foreach (var enemyConfig in levelConfig.Enemies)
+        {
+            var enemy = Instantiate(_enemyPrefab, enemyConfig.SpawnLocation, Quaternion.identity);
+            enemy.Init(enemyConfig);
+        }
     }
 
     private void OnGUI()
@@ -29,24 +40,6 @@ public class GameMaster : MonoBehaviour
         if (GUILayout.Button("Restart"))
         {
             LifeLost();
-        }
-    }
-
-    private void SpawnEnemies(int enemyCount)
-    {
-        Debug.Assert(enemyCount <= _spawnLocations.Count);
-        var usedSpawnLocations = new List<Transform>();
-        while (enemyCount > 0)
-        {
-            var randomLocation = _spawnLocations.GetRandom();
-            while (usedSpawnLocations.Contains(randomLocation))
-            {
-                Debug.Break();
-                randomLocation = _spawnLocations.GetRandom();
-            }
-            usedSpawnLocations.Add(randomLocation);
-            var enemy = Instantiate(_enemyPrefab, randomLocation.position, Quaternion.identity);
-            enemyCount--;
         }
     }
 
@@ -63,20 +56,18 @@ public class GameMaster : MonoBehaviour
     private IEnumerator ResetLevel()
     {
         var allTiles = FindObjectsOfType<Tile>();
-        var player = FindObjectOfType<EvenMoreSimplePlayerController>();
+        var player = FindObjectOfType<PlayerController>();
         player.ResetToDefault();
-        foreach (var tile in allTiles)
-        {
-            tile.ResetToDefault();
-            yield return new WaitForSeconds(0.001f);
-        }
         var enemies = FindObjectsOfType<Enemy>();
         foreach (var enemy in enemies)
         {
             enemy.Die();
         }
-        yield return new WaitForSeconds(0.4f);
+        foreach (var tile in allTiles)
+        {
+            tile.ResetToDefault();
+            yield return new WaitForSeconds(0.001f);
+        }
         Running = true;
-        SpawnEnemies(1);
     }
 }

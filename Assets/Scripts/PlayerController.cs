@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EvenMoreSimplePlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
+    [SerializeField] private Trail _trail;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
@@ -28,6 +29,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         _lastPlayerInput = Vector2.zero;
         transform.position = _startPosition;
         _isMoving = false;
+        _trail.enabled = false;
         StopAllCoroutines();
     }
     
@@ -258,10 +260,12 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         _slidingVelocity = _velocity.normalized * _maxSpeed;
         _polygonBuilder.Clear();
         _polygonBuilder.Add(_lastWalkableTile.transform.position);
+        _trail.enabled = true;
     }
 
     private void EndSliding(Tile newTile)
     {
+        _trail.enabled = false;
         _polygonBuilder.Add(newTile.transform.position);
         _polygonBuilder.Build();
         var tilesToFlip = GetTilesInPolygon();

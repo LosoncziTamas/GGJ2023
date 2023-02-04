@@ -5718,6 +5718,8 @@ MonoBehaviour:
   _spawnLocations:
   - {fileID: 1472641321}
   - {fileID: 1766198545}
+  _levels:
+  - {fileID: 11400000, guid: 57222bece5331498db5b9b71fe17e67d, type: 2}
 --- !u!4 &734145622
 Transform:
   m_ObjectHideFlags: 0
@@ -15445,7 +15447,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5809593063885709957, guid: b5ef1b4b3288c4fb9847361750428635, type: 3}
       propertyPath: m_Name
-      value: Even More Simple Controlled Player
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 5809593063885709961, guid: b5ef1b4b3288c4fb9847361750428635, type: 3}
       propertyPath: m_RootOrder

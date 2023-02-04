@@ -112,6 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxSpeed: 4.6
+  _trail: {fileID: 2878331569836887891}
 --- !u!1 &9077422906677403496
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,5 +157,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94c387cab5a54e54af9a71d232ca0896, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _trailPrefab: {fileID: 90636214427830419, guid: 0393e66b2ff5e488682cd9aa61fed9ea, type: 3}
+  _trailPrefab: {fileID: 1601107581704996464, guid: 0393e66b2ff5e488682cd9aa61fed9ea, type: 3}
   _gameConfig: {fileID: 11400000, guid: c87358d4127d34163befe01fd777a1fb, type: 2}

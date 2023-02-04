@@ -3,22 +3,28 @@ using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private GameConfig _gameConfig;
-    
     private Vector2 _randomInput;
     private Vector3 _velocity;
     private Tile _closestTile;
+    private EnemyConfig _enemyConfig;
     
-    private void Start()
+    public void Init(EnemyConfig enemyConfig)
     {
-        var randomDirection = Random.insideUnitCircle;
-        Debug.Log("randomDirection " + randomDirection);
-        _randomInput = randomDirection;
+        transform.position = enemyConfig.SpawnLocation;
+        _enemyConfig = enemyConfig;
+        if (enemyConfig.StartDirection.magnitude > 0)
+        {
+            _randomInput = enemyConfig.StartDirection.normalized;
+        }
+        else
+        {
+            _randomInput = Random.insideUnitCircle;
+        }
     }
 
     private void Update()
     {
-        _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _gameConfig.EnemyMaxSpeed;
+        _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
         var desiredDisplacement = _velocity * Time.deltaTime;
         var newPosition = transform.localPosition + desiredDisplacement;
         transform.position = newPosition;

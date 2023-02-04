@@ -15,15 +15,30 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
     private Vector3? _slidingVelocity;
     private Vector3 _velocity;
     private Vector2 _lastPlayerInput;
+    private Vector3 _startPosition;
     
     private bool IsSliding => _slidingVelocity.HasValue;
+
+    public void ResetToDefault()
+    {
+        _targetTile = null;
+        _lastWalkableTile = null;
+        _slidingVelocity = null;
+        _velocity = Vector3.zero;
+        _lastPlayerInput = Vector2.zero;
+        transform.position = _startPosition;
+        _isMoving = false;
+        StopAllCoroutines();
+    }
     
     private void Start()
     {
         _allTiles = new List<Tile>(FindObjectsOfType<Tile>(includeInactive: true));
         _polygonBuilder = FindObjectOfType<PolygonBuilder>();
+        _startPosition = transform.position;
     }
 
+#if false
     private void OnGUI()
     {
         GUILayout.Label("_velocity " + _velocity);
@@ -31,6 +46,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         GUILayout.Label("_targetTile " + _targetTile.transform.position);
         GUILayout.Label("_isMoving " + _isMoving);
     }
+#endif
 
     private void Update()
     {
@@ -76,7 +92,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         var desiredDisplacement = _velocity * Time.deltaTime;
         return transform.localPosition + desiredDisplacement;
     }
-    
+
     private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
     {
         if (Mathf.Approximately(playerInput.magnitude, 0.0f))
@@ -89,32 +105,33 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
             var slidingLeft = velocity.x < 0;
             var slidingRight = velocity.x > 0;
             // To make sure tiles are included in the collider.
+            // TODO: uncomment for more advanced control
             var includerOffset = new Vector3();
             if ((slidingLeft || slidingRight) && playerInput.y > 0)
             {
-                _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
+                // _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
                 includerOffset = new Vector3(0, 0, -0.5f);
-                directionChanged = true;
+                // directionChanged = true;
             }
             else if ((slidingLeft || slidingRight) && playerInput.y < 0)
             {
-                _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
+                // _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
                 includerOffset = new Vector3(0, 0, 0.5f);
-                directionChanged = true;
+                // directionChanged = true;
             }
             var slidingUp = velocity.z > 0;
             var slidingDown = velocity.z < 0;
             if ((slidingUp || slidingDown) && playerInput.x > 0)
             {
-                _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
+                // _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
                 includerOffset = new Vector3(-0.5f, 0.5f, 0.0f);
-                directionChanged = true;
+                // directionChanged = true;
             }
             else if ((slidingUp || slidingDown) && playerInput.x < 0)
             {
-                _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
+                // _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
                 includerOffset = new Vector3(0.5f, 0, 0.0f);
-                directionChanged = true;
+                // directionChanged = true;
             }
             if (directionChanged)
             {
@@ -154,7 +171,7 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
             yield break;
         }
         _isMoving = true;
-        var targetPosition = targetTile.transform.position;
+        var targetPosition = new Vector3(targetTile.transform.position.x, targetTile.transform.position.y, transform.position.z);
         while (true)
         {
             var distance = Vector3.Distance(targetPosition, transform.position);
@@ -251,6 +268,23 @@ public class EvenMoreSimplePlayerController : MonoBehaviour
         foreach (var tile in tilesToFlip)
         {
             tile.MarkResolved();
+        }
+        CheckCompletion();
+    }
+
+    private void CheckCompletion()
+    {
+        var walkableCount = 0;
+        foreach (var tile in _allTiles)
+        {
+            if (tile.TileType == TileType.Walkable)
+            {
+                walkableCount++;
+            }
+        }
+        if (walkableCount == _allTiles.Count)
+        {
+            Debug.Log("Victory");
         }
     }
     

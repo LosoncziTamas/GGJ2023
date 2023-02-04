@@ -8,12 +8,21 @@ public class Tile : MonoBehaviour
     [SerializeField] private Material _walkableColor;
 
     private Renderer _renderer;
+    private TileType _originalType;
     
     public TileType TileType => _tileType;
 
     private void Awake()
     {
         _renderer = GetComponent<Renderer>();
+        _originalType = _tileType;
+    }
+
+    public void ResetToDefault()
+    {
+        _tileType = _originalType;
+        SetHighlightEnabled(false);
+        SetColors();
     }
 
     private void Start()

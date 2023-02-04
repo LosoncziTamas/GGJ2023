@@ -89,4 +89,9 @@ public class Enemy : MonoBehaviour
         contactNormal.Normalize();
         _randomInput = contactNormal;
     }
+
+    public void Die()
+    {
+        Destroy(gameObject);
+    }
 }

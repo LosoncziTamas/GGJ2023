@@ -16,6 +16,7 @@ public class GameMaster : MonoBehaviour
     private TaskCompletionSource<GameResult> _gameCompletionSource;
 
     public bool Running { get; private set; }
+    public bool Initializing { get; private set; }
 
     private void Awake()
     {
@@ -48,9 +49,9 @@ public class GameMaster : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUILayout.Button("Restart"))
+        if (GUILayout.Button("MoveToNextLevel"))
         {
-            LifeLost();
+            MoveToNextLevel();
         }
         GUILayout.Label("Running " + Running);
     }
@@ -73,6 +74,7 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator ClearLevel()
     {
+        Initializing = true;
         var allTiles = FindObjectsOfType<Tile>();
         var player = FindObjectOfType<PlayerController>();
         player.ResetToDefault();
@@ -86,6 +88,7 @@ public class GameMaster : MonoBehaviour
             tile.ResetToDefault();
             yield return new WaitForSeconds(0.001f);
         }
+        Initializing = false;
     }
 
     private void Update()
@@ -95,7 +98,7 @@ public class GameMaster : MonoBehaviour
             FinishGameWithResult(GameResult.Exited);
         }
     }
-
+    
     public void MoveToNextLevel()
     {
         Running = false;

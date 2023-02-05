@@ -110,18 +110,14 @@ public class PlayerController : MonoBehaviour
             var directionChanged = false;
             var slidingLeft = velocity.x < 0;
             var slidingRight = velocity.x > 0;
-            // To make sure tiles are included in the collider.
-            var includerOffset = new Vector3();
             if ((slidingLeft || slidingRight) && playerInput.y > 0)
             {
                 _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
-                includerOffset = new Vector3(0, 0, -0.5f);
                 directionChanged = true;
             }
             else if ((slidingLeft || slidingRight) && playerInput.y < 0)
             {
                 _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
-                includerOffset = new Vector3(0, 0, 0.5f);
                 directionChanged = true;
             }
             var slidingUp = velocity.z > 0;
@@ -129,19 +125,16 @@ public class PlayerController : MonoBehaviour
             if ((slidingUp || slidingDown) && playerInput.x > 0)
             {
                 _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
-                includerOffset = new Vector3(-0.5f, 0.5f, 0.0f);
                 directionChanged = true;
             }
             else if ((slidingUp || slidingDown) && playerInput.x < 0)
             {
                 _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
-                includerOffset = new Vector3(0.5f, 0, 0.0f);
                 directionChanged = true;
             }
             if (directionChanged)
             {
                 _currentTurnCount++;
-                Debug.Log("directionChanged position" + _targetTile.transform.position);
                 _polygonBuilder.Add(_targetTile.transform.position);
                 _slidingVelocity = _velocity;
             }
@@ -181,12 +174,17 @@ public class PlayerController : MonoBehaviour
         var targetPosition = new Vector3(targetTile.transform.position.x, targetTile.transform.position.y, transform.position.z);
         while (true)
         {
+            // TODO: use more elegant fix for repositioning
+            if (GameMaster.Instance.Initializing)
+            {
+                ResetToDefault();
+                yield break;
+            }
             var distance = Vector3.Distance(targetPosition, transform.position);
             if (distance < 0.01f)
             {
                 transform.position = targetPosition;
                 _isMoving = false;
-                // TODO: do something about this
                 yield break;
             }
             var newPos = Vector3.MoveTowards(transform.position, targetPosition, _maxSpeed * Time.deltaTime);
@@ -312,7 +310,7 @@ public class PlayerController : MonoBehaviour
             GameMaster.Instance.MoveToNextLevel();
         }
     }
-    
+
     private List<Tile> GetTilesInPolygon()
     {
         var result = new List<Tile>();

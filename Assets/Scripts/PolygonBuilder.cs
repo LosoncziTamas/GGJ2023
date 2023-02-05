@@ -64,10 +64,15 @@ public class PolygonBuilder : MonoBehaviour
             HandlePolygon(startPos, endPos);
             Debug.Log("HandlePolygon " + startPos + " " + endPos);
         }
+        PerformClockwiseOrdering();
+    }
+
+    private void PerformClockwiseOrdering()
+    {
         _polygonCollider2D.points = _positions.ToArray();
-        //_colliderCenter = _polygonCollider2D.bounds.center;
-        //var ordered = _positions.OrderBy(x => Math.Atan2(x.x - _colliderCenter.x, x.y - _colliderCenter.y)).ToList();
-        //_polygonCollider2D.points = ordered.ToArray();
+        _colliderCenter = _polygonCollider2D.bounds.center;
+        var ordered = _positions.OrderBy(x => Math.Atan2(x.x - _colliderCenter.x, x.y - _colliderCenter.y)).ToList();
+        _polygonCollider2D.points = ordered.ToArray();
     }
 
     private void HandleTriangle(Vector2 start, Vector2 mid, Vector2 end)

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Gui;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -21,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 _lastPlayerInput;
     private Vector3 _startPosition;
     private int _currentTurnCount;
+    private TurnDisplay _turnDisplay;
     
     private bool IsSliding => _slidingVelocity.HasValue;
 
@@ -45,23 +47,23 @@ public class PlayerController : MonoBehaviour
         _allTiles = new List<Tile>(FindObjectsOfType<Tile>(includeInactive: true));
         _polygonBuilder = FindObjectOfType<PolygonBuilder>();
         _startPosition = transform.position;
+        _turnDisplay = FindObjectOfType<TurnDisplay>(true);
     }
-    
-#if false
-    private void OnGUI()
-    {
-        GUILayout.Label("_velocity " + _velocity);
-        GUILayout.Label("_lastWalkableTile " + _lastWalkableTile.transform.position);
-        GUILayout.Label("_targetTile " + _targetTile.transform.position);
-        GUILayout.Label("_isMoving " + _isMoving);
-    }
-#endif
 
     private void Update()
     {
-        if (_isMoving || !GameMaster.Instance.Running)
+        if (_isMoving)
         {
             return;
+        }
+        if (!GameMaster.Instance.Running)
+        {
+            _turnDisplay.gameObject.SetActive(false);
+        }
+        else
+        {
+            _turnDisplay.SetCount(MaxTurnCount - _currentTurnCount);
+            _turnDisplay.gameObject.SetActive(true);
         }
         var newPosition = VelocityBasedMovement();
         if (!_allowedArea.Contains(new Vector2(newPosition.x, newPosition.z)))

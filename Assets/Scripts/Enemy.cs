@@ -4,6 +4,8 @@ using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour
 {
+    [SerializeField] private AntAnimationController _animationController;
+    
     private Vector2 _randomInput;
     private Vector3 _velocity;
     private Tile _closestTile;
@@ -23,12 +25,21 @@ public class Enemy : MonoBehaviour
         {
             _randomInput = Random.insideUnitCircle;
         }
+
+        if (_animationController)
+        {
+            _animationController.Walk();
+        }
     }
 
     private void Update()
     {
         if (_captured)
         {
+            if (_animationController)
+            {
+                _animationController.Idle();
+            }
             return;
         }
         _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
@@ -90,13 +101,6 @@ public class Enemy : MonoBehaviour
         }
         Debug.Log("CheckCapture: true");
         return true;
-    }
-
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position, transform.localScale);
     }
 
     private void InitializeTargetTile(Tile newTile, Collision collision)

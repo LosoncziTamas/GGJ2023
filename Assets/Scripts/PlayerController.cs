@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
+    [SerializeField] private PlayerAnimationController _animationController;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
@@ -36,6 +37,7 @@ public class PlayerController : MonoBehaviour
         _currentTurnCount = 0;
         _polygonBuilder.ResetCorners();
         StopAllCoroutines();
+        _animationController.Stop();
     }
     
     private void Start()
@@ -45,7 +47,7 @@ public class PlayerController : MonoBehaviour
         _startPosition = transform.position;
     }
 
-#if false
+
     private void OnGUI()
     {
         GUILayout.Label("_velocity " + _velocity);
@@ -53,7 +55,7 @@ public class PlayerController : MonoBehaviour
         GUILayout.Label("_targetTile " + _targetTile.transform.position);
         GUILayout.Label("_isMoving " + _isMoving);
     }
-#endif
+
 
     private void Update()
     {
@@ -96,8 +98,47 @@ public class PlayerController : MonoBehaviour
         {
             _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
         }
+        UpdateAnimation();
         var desiredDisplacement = _velocity * Time.deltaTime;
         return transform.localPosition + desiredDisplacement;
+    }
+
+    private void UpdateAnimation()
+    {
+        if (_velocity.magnitude == 0)
+        {
+            _animationController.Stop();
+        }
+        else
+        {
+            var x = _velocity.x;
+            var z = _velocity.z;
+            if (x > 0)
+            {
+                _animationController.WalkRight();
+            }
+            else if (x < 0)
+            {
+                _animationController.WalkLeft();
+            }
+            else if (z > 0)
+            {
+                _animationController.WalkForward();
+            }
+            else if (z < 0)
+            {
+                _animationController.WalkBackward();
+            }
+            else
+            {
+                Debug.Break();
+            }
+        }
+    }
+
+    public void Die()
+    {
+        _animationController.Die();
     }
 
     private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
@@ -113,11 +154,13 @@ public class PlayerController : MonoBehaviour
             var slidingRight = velocity.x > 0;
             if ((slidingLeft || slidingRight) && playerInput.y > 0)
             {
+                _animationController.WalkForward();
                 _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
                 directionChanged = true;
             }
             else if ((slidingLeft || slidingRight) && playerInput.y < 0)
             {
+                _animationController.WalkBackward();
                 _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
                 directionChanged = true;
             }
@@ -125,11 +168,13 @@ public class PlayerController : MonoBehaviour
             var slidingDown = velocity.z < 0;
             if ((slidingUp || slidingDown) && playerInput.x > 0)
             {
+                _animationController.WalkRight();
                 _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
                 directionChanged = true;
             }
             else if ((slidingUp || slidingDown) && playerInput.x < 0)
             {
+                _animationController.WalkLeft();
                 _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
                 directionChanged = true;
             }
@@ -160,7 +205,8 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            playerInput = _lastPlayerInput;
+            playerInput = Vector2.zero;
+            //playerInput = _lastPlayerInput;
         }
         return playerInput;
     }

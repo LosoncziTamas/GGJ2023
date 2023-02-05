@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private List<LevelConfig> _levels;
 
     private LevelConfig _currentLevelConfig;
+    private PlayerController _player;
 
     private TaskCompletionSource<GameResult> _gameCompletionSource;
 
@@ -21,6 +23,11 @@ public class GameMaster : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
+        _player = FindObjectOfType<PlayerController>();
     }
 
     public Task<GameResult> StartGame()
@@ -54,11 +61,14 @@ public class GameMaster : MonoBehaviour
             return;
         }
         Running = false;
-        StartCoroutine(ClearLevelAndStart(_currentLevelConfig));
+        _player.Die();
+        const float dieDelay = 2.0f;
+        StartCoroutine(ClearLevelAndStart(_currentLevelConfig, dieDelay));
     }
 
-    private IEnumerator ClearLevelAndStart(LevelConfig levelConfig)
+    private IEnumerator ClearLevelAndStart(LevelConfig levelConfig, float delay = 0)
     {
+        yield return new WaitForSeconds(delay);
         yield return ClearLevel();
         InitLevel(levelConfig);
     }
@@ -67,8 +77,7 @@ public class GameMaster : MonoBehaviour
     {
         Initializing = true;
         var allTiles = FindObjectsOfType<Tile>();
-        var player = FindObjectOfType<PlayerController>();
-        player.ResetToDefault();
+        _player.ResetToDefault();
         var enemies = FindObjectsOfType<Enemy>();
         foreach (var enemy in enemies)
         {

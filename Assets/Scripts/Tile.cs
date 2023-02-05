@@ -6,7 +6,7 @@ public class Tile : MonoBehaviour
     [SerializeField] private GameObject _highlightObject;
     [SerializeField] private Material _slipperyColor;
     [SerializeField] private Material _walkableColor;
-
+    
     private Renderer _renderer;
     private TileType _originalType;
     
@@ -52,4 +52,7 @@ public class Tile : MonoBehaviour
         _tileType = TileType.Walkable;
         SetColors();
     }
+
+    public bool OriginallyWalkable() => _originalType == TileType.Walkable;
+    public bool OriginallySlippery() => _originalType == TileType.Slippery;
 }

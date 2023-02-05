@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    private const int MaxTurnCount = 1;
+    
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
 
@@ -17,6 +19,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _velocity;
     private Vector2 _lastPlayerInput;
     private Vector3 _startPosition;
+    private int _currentTurnCount;
     
     private bool IsSliding => _slidingVelocity.HasValue;
 
@@ -30,6 +33,7 @@ public class PlayerController : MonoBehaviour
         transform.position = _startPosition;
         _isMoving = false;
         _trail.enabled = false;
+        _currentTurnCount = 0;
         StopAllCoroutines();
     }
     
@@ -97,7 +101,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
     {
-        if (Mathf.Approximately(playerInput.magnitude, 0.0f))
+        if (Mathf.Approximately(playerInput.magnitude, 0.0f) || _currentTurnCount == MaxTurnCount)
         {
             _velocity = velocity;
         }
@@ -107,37 +111,38 @@ public class PlayerController : MonoBehaviour
             var slidingLeft = velocity.x < 0;
             var slidingRight = velocity.x > 0;
             // To make sure tiles are included in the collider.
-            // TODO: uncomment for more advanced control
             var includerOffset = new Vector3();
             if ((slidingLeft || slidingRight) && playerInput.y > 0)
             {
-                // _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
+                _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
                 includerOffset = new Vector3(0, 0, -0.5f);
-                // directionChanged = true;
+                directionChanged = true;
             }
             else if ((slidingLeft || slidingRight) && playerInput.y < 0)
             {
-                // _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
+                _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
                 includerOffset = new Vector3(0, 0, 0.5f);
-                // directionChanged = true;
+                directionChanged = true;
             }
             var slidingUp = velocity.z > 0;
             var slidingDown = velocity.z < 0;
             if ((slidingUp || slidingDown) && playerInput.x > 0)
             {
-                // _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
+                _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
                 includerOffset = new Vector3(-0.5f, 0.5f, 0.0f);
-                // directionChanged = true;
+                directionChanged = true;
             }
             else if ((slidingUp || slidingDown) && playerInput.x < 0)
             {
-                // _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
+                _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
                 includerOffset = new Vector3(0.5f, 0, 0.0f);
-                // directionChanged = true;
+                directionChanged = true;
             }
             if (directionChanged)
             {
-                _polygonBuilder.Add(_targetTile.transform.position + includerOffset);
+                _currentTurnCount++;
+                Debug.Log("directionChanged position" + _targetTile.transform.position);
+                _polygonBuilder.Add(_targetTile.transform.position);
                 _slidingVelocity = _velocity;
             }
         }
@@ -202,7 +207,7 @@ public class PlayerController : MonoBehaviour
 
     private void EvaluateTrigger(Collider other)
     {
-        if (_isMoving)
+        if (_isMoving && IsSliding)
         {
             return;
         }
@@ -257,14 +262,16 @@ public class PlayerController : MonoBehaviour
     
     private void BeginSliding()
     {
+        _currentTurnCount = 0;
         _slidingVelocity = _velocity.normalized * _maxSpeed;
         _polygonBuilder.Clear();
-        _polygonBuilder.Add(_lastWalkableTile.transform.position);
+        _polygonBuilder.Add(_targetTile.transform.position);
         _trail.enabled = true;
     }
 
     private void EndSliding(Tile newTile)
     {
+        _currentTurnCount = 0;
         _trail.enabled = false;
         _polygonBuilder.Add(newTile.transform.position);
         _polygonBuilder.Build();
@@ -274,6 +281,20 @@ public class PlayerController : MonoBehaviour
             tile.MarkResolved();
         }
         CheckCompletion();
+    }
+    
+    private void UpdateCornersForPolygonCalculation()
+    {
+        var potentialCorners = new List<Vector3>();
+        foreach (var tile in _allTiles)
+        {
+            if (tile.OriginallySlippery() && tile.TileType == TileType.Walkable)
+            {
+                var tilePosition = tile.transform.position;
+                potentialCorners.Add(tilePosition);
+            }
+        }
+        _polygonBuilder.UpdateCorners(potentialCorners);
     }
 
     private void CheckCompletion()

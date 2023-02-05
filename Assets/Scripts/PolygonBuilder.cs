@@ -17,6 +17,7 @@ public class PolygonBuilder : MonoBehaviour
     private Vector2 _bottomRight;
 
     private readonly List<Vector2> _positions = new();
+    private Vector3 _colliderCenter;
 
     private void Start()
     {
@@ -55,30 +56,64 @@ public class PolygonBuilder : MonoBehaviour
         }
         else if (positionCount == 3)
         {
-            var start = _positions[0];
-            var end = _positions[2];
-            if (start.x < end.x)
-            {
-                Add(new Vector2(start.x, end.y));
-            }
-            else
-            {
-                Add(new Vector2(end.x, start.y));
-            }
+            HandleTriangle(startPos, _positions[1], endPos);
+            Debug.Log("HandleTriangle " + startPos + " " + endPos);
         }
         else
         {
-            var cornerToAdd = GetClosestCornerToPoints(_positions);
-            if (cornerToAdd.HasValue)
-            {
-                Add(cornerToAdd.Value);
-            }
+            HandlePolygon(startPos, endPos);
+            Debug.Log("HandlePolygon " + startPos + " " + endPos);
         }
         _polygonCollider2D.points = _positions.ToArray();
-        var center = _polygonCollider2D.bounds.center;
-        var ordered = _positions.OrderBy(x => Math.Atan2(x.x - center.x, x.y - center.y)).ToList();
-        Debug.Log(" ordered " + ordered + " original " + _positions);
-        _polygonCollider2D.points = ordered.ToArray();
+        //_colliderCenter = _polygonCollider2D.bounds.center;
+        //var ordered = _positions.OrderBy(x => Math.Atan2(x.x - _colliderCenter.x, x.y - _colliderCenter.y)).ToList();
+        //_polygonCollider2D.points = ordered.ToArray();
+    }
+
+    private void HandleTriangle(Vector2 start, Vector2 mid, Vector2 end)
+    {
+        var midAboveEnd = Greater(mid.y, end.y);
+        if (midAboveEnd)
+        {
+            Add(new Vector2(start.x, end.y));
+        }
+        else if (Approximately(mid.y, end.y))
+        {
+            Add(new Vector2(end.x, start.y));
+        }
+        else if (Approximately(mid.y, start.y))
+        {
+            Add(new Vector2(start.x, end.y));
+        }
+        else
+        {
+            var midIsBetween = mid.y < end.y && mid.y > start.y;
+            if (midIsBetween)
+            {
+                Add(new Vector2(end.x, start.y));
+            }
+            else
+            {
+                Debug.Break();
+            }
+        }
+    }
+
+    private bool Greater(float a, float b, float threshold = 0.01f)
+    {
+        var result = a - b;
+        return result > threshold;
+    }
+
+    private bool Approximately(float a, float b, float threshold = 0.01f)
+    {
+        var diff = Mathf.Abs(a - b);
+        return diff < threshold;
+    }
+
+    private void HandlePolygon(Vector2 start, Vector2 end)
+    {
+        
     }
 
     private float CalculateAccumulatedDistanceToCorner(List<Vector2> points, Vector2 corner)
@@ -163,6 +198,11 @@ public class PolygonBuilder : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(_colliderCenter, Vector3.one);
+        foreach (var position in _positions)
+        {
+            Gizmos.DrawWireSphere(position, 0.2f);
+        }
         //Gizmos.DrawCube(_topLeft, Vector3.one);
         //Gizmos.DrawCube(_bottomLeft, Vector3.one);
         //Gizmos.DrawCube(_topRight, Vector3.one);

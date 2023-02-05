@@ -279,7 +279,7 @@ public class PlayerController : MonoBehaviour
             _slidingVelocity = null;
             _lastWalkableTile = newTile;
         }
-        _targetTile.SetHighlightEnabled(true);
+        _targetTile.SetHighlightEnabled(true, enemy: false);
         StartCoroutine(MoveToTile(_targetTile));
     }
     

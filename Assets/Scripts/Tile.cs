@@ -6,6 +6,9 @@ public class Tile : MonoBehaviour
     [SerializeField] private GameObject _highlightObject;
     [SerializeField] private Material _slipperyColor;
     [SerializeField] private Material _walkableColor;
+    [SerializeField] private Material _playerHighlight;
+    [SerializeField] private Material _enemyHighLight;
+    [SerializeField] private Renderer _highlightObjectRenderer;
     
     private Renderer _renderer;
     private TileType _originalType;
@@ -42,9 +45,13 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public void SetHighlightEnabled(bool highlightEnabled)
+    public void SetHighlightEnabled(bool highlightEnabled, bool enemy = false)
     {
         _highlightObject.gameObject.SetActive(highlightEnabled);
+        if (highlightEnabled)
+        {
+            _highlightObjectRenderer.material = enemy ? _enemyHighLight : _playerHighlight;
+        }
     }
 
     public void MarkResolved()

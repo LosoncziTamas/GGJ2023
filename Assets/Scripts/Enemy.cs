@@ -114,15 +114,10 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            _closestTile.SetHighlightEnabled(true);
+            _closestTile.SetHighlightEnabled(true, enemy: true);
         }
     }
-
-    private void OnGUI()
-    {
-        GUILayout.Label("_velocity " + _velocity);
-    }
-
+    
     private void UpdateClosestTile(Tile newTile, Collision collision)
     {
         var selfPos = transform.position;

@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Splash : MonoBehaviour
 {
-    public const string MainSceneName = "Game Scene";
+    public const string MainSceneName = "Game Scene Probuilder";
     public const string LoaderSceneName = "Splash Scene";
     
     private const float FadeDuration = 1.0f;

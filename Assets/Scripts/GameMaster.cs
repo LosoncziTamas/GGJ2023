@@ -49,7 +49,7 @@ public class GameMaster : MonoBehaviour
         Running = true;
         foreach (var enemyConfig in levelConfig.Enemies)
         {
-            var enemy = Instantiate(_enemyPrefab, enemyConfig.SpawnLocation, Quaternion.identity); //  Quaternion.Euler(0, 90, -90)
+            var enemy = Instantiate(_enemyPrefab, enemyConfig.SpawnLocation, Quaternion.identity);
             enemy.Init(enemyConfig);
         }
     }

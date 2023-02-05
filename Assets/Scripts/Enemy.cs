@@ -5,6 +5,7 @@ using Random = UnityEngine.Random;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private AntAnimationController _animationController;
+    [SerializeField] private Transform _child;
     
     private Vector2 _randomInput;
     private Vector3 _velocity;
@@ -43,6 +44,7 @@ public class Enemy : MonoBehaviour
             return;
         }
         _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
+        _child.right = _velocity.normalized;
         var desiredDisplacement = _velocity * Time.deltaTime;
         var newPosition = transform.localPosition + desiredDisplacement;
         transform.position = newPosition;
@@ -115,7 +117,12 @@ public class Enemy : MonoBehaviour
             _closestTile.SetHighlightEnabled(true);
         }
     }
-    
+
+    private void OnGUI()
+    {
+        GUILayout.Label("_velocity " + _velocity);
+    }
+
     private void UpdateClosestTile(Tile newTile, Collision collision)
     {
         var selfPos = transform.position;

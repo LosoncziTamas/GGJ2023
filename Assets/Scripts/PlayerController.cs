@@ -46,8 +46,8 @@ public class PlayerController : MonoBehaviour
         _polygonBuilder = FindObjectOfType<PolygonBuilder>();
         _startPosition = transform.position;
     }
-
-
+    
+#if false
     private void OnGUI()
     {
         GUILayout.Label("_velocity " + _velocity);
@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour
         GUILayout.Label("_targetTile " + _targetTile.transform.position);
         GUILayout.Label("_isMoving " + _isMoving);
     }
-
+#endif
 
     private void Update()
     {

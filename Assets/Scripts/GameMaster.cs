@@ -47,15 +47,6 @@ public class GameMaster : MonoBehaviour
         }
     }
 
-    private void OnGUI()
-    {
-        if (GUILayout.Button("MoveToNextLevel"))
-        {
-            MoveToNextLevel();
-        }
-        GUILayout.Label("Running " + Running);
-    }
-
     public void LifeLost()
     {
         if (!Running)

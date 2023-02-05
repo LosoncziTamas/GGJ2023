@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
         _isMoving = false;
         _trail.enabled = false;
         _currentTurnCount = 0;
+        _polygonBuilder.ResetCorners();
         StopAllCoroutines();
     }
     
@@ -272,19 +273,23 @@ public class PlayerController : MonoBehaviour
         _currentTurnCount = 0;
         _trail.enabled = false;
         _polygonBuilder.Add(newTile.transform.position);
-        _polygonBuilder.Build();
+        _polygonBuilder.Build(out var polygonBuildInfo);
         var tilesToFlip = GetTilesInPolygon();
         foreach (var tile in tilesToFlip)
         {
             tile.MarkResolved();
         }
         CheckCompletion();
+        if (polygonBuildInfo.IsStraightLine)
+        {
+            UpdateCornersForPolygonCalculation(polygonBuildInfo, tilesToFlip);
+        }
     }
     
-    private void UpdateCornersForPolygonCalculation()
+    private void UpdateCornersForPolygonCalculation(PolygonBuilder.PolygonBuildInfo polygonBuildInfo, List<Tile> flippedTiles)
     {
         var potentialCorners = new List<Vector3>();
-        foreach (var tile in _allTiles)
+        foreach (var tile in flippedTiles)
         {
             if (tile.OriginallySlippery() && tile.TileType == TileType.Walkable)
             {
@@ -292,7 +297,7 @@ public class PlayerController : MonoBehaviour
                 potentialCorners.Add(tilePosition);
             }
         }
-        _polygonBuilder.UpdateCorners(potentialCorners);
+        _polygonBuilder.UpdateCorners(potentialCorners, polygonBuildInfo);
     }
 
     private void CheckCompletion()

@@ -21,6 +21,11 @@ public class PolygonBuilder : MonoBehaviour
 
     private void Start()
     {
+        ResetCorners();
+    }
+
+    public void ResetCorners()
+    {
         _bottomLeft = new Vector2(_bottomLeftCorner.position.x, _bottomLeftCorner.position.y);
         _topLeft = new Vector2(_topLeftCorner.position.x, _topLeftCorner.position.y);
         _topRight = new Vector2(_topRightCorner.position.x, _topRightCorner.position.y);
@@ -38,10 +43,21 @@ public class PolygonBuilder : MonoBehaviour
         _polygonCollider2D.pathCount = 0;
         _polygonCollider2D.points = null;
     }
+
+    public class PolygonBuildInfo
+    {
+        public static PolygonBuildInfo None = new();
+        
+        public bool IsStraightLine;
+        public bool IsHorizontal;
+        public bool LeftToRight;
+        public bool BottomToTop;
+    }
     
-    public void Build()
+    public void Build(out PolygonBuildInfo polygonBuildInfo)
     {
         var positionCount = _positions.Count;
+        polygonBuildInfo = PolygonBuildInfo.None;
         if (positionCount < 2)
         {
             Debug.LogError("Not enough positions.");
@@ -52,7 +68,7 @@ public class PolygonBuilder : MonoBehaviour
         var isStraightLine = positionCount == 2;
         if (isStraightLine)
         {
-            HandleStraightLine(startPos, endPos);
+            polygonBuildInfo = HandleStraightLine(startPos, endPos);
         }
         else if (positionCount == 3)
         {
@@ -157,8 +173,9 @@ public class PolygonBuilder : MonoBehaviour
         return null;
     }
 
-    private void HandleStraightLine(Vector2 startPos, Vector2 endPos)
+    private PolygonBuildInfo HandleStraightLine(Vector2 startPos, Vector2 endPos)
     {
+        var result = new PolygonBuildInfo();
         var displacement = endPos - startPos;
         var horizontal = Mathf.Abs(displacement.x) > Mathf.Abs(displacement.y);
         var leftToRight = displacement.x > 0;
@@ -193,11 +210,52 @@ public class PolygonBuilder : MonoBehaviour
                 Add(bottomToTop ? _bottomRight : _topRight);
             }
         }
+        // Here they mean something different
+        result.IsHorizontal = !horizontal;
+        result.IsStraightLine = true;
+        result.LeftToRight = Mathf.Abs(startPos.x - _topLeft.x) < Mathf.Abs(startPos.x - _topRight.x);
+        result.BottomToTop = Mathf.Abs(startPos.y - _bottomLeft.y) < Mathf.Abs(startPos.y - _topLeft.y);
+        return result;
     }
 
-    public void UpdateCorners(List<Vector3> resolvedPositions)
+    public void UpdateCorners(List<Vector3> resolvedPositions, PolygonBuildInfo polygonBuildInfo)
     {
-        
+        var leftToRight = polygonBuildInfo.LeftToRight;
+        var bottomToTop = polygonBuildInfo.BottomToTop;
+        if (polygonBuildInfo.IsHorizontal)
+        {
+            if (leftToRight)
+            {
+                Debug.Log("UpdateCorners leftToRight");
+                var mostRight = resolvedPositions.Max(vector3 => vector3.x);
+                _topLeft = new Vector2(mostRight, _topLeft.y);
+                _bottomLeft = new Vector2(mostRight, _bottomLeft.y);
+            }
+            else
+            {
+                Debug.Log("UpdateCorners rightToLeft");
+                var mostLeft = resolvedPositions.Min(vector3 => vector3.x);
+                _topRight = new Vector2(mostLeft, _topRight.y);
+                _bottomRight = new Vector2(mostLeft, _bottomRight.y);
+            }
+        }
+        else
+        {
+            if (bottomToTop)
+            {
+                Debug.Log("UpdateCorners bottomToTop");
+                var mostTop = resolvedPositions.Max(vector3 => vector3.y);
+                _bottomLeft = new Vector2(_bottomLeft.x, mostTop);
+                _bottomRight = new Vector2(_bottomRight.x, mostTop);
+            }
+            else
+            {
+                Debug.Log("UpdateCorners topToBottom");
+                var mostBottom = resolvedPositions.Min(vector3 => vector3.y);
+                _topLeft = new Vector2(_topLeft.x, mostBottom);
+                _topRight = new Vector2(_topRight.x, mostBottom);
+            }
+        }
     }
 
     private void OnDrawGizmos()
@@ -208,10 +266,10 @@ public class PolygonBuilder : MonoBehaviour
         {
             Gizmos.DrawWireSphere(position, 0.2f);
         }
-        //Gizmos.DrawCube(_topLeft, Vector3.one);
-        //Gizmos.DrawCube(_bottomLeft, Vector3.one);
-        //Gizmos.DrawCube(_topRight, Vector3.one);
-        //Gizmos.DrawCube(_bottomRight, Vector3.one);
+        Gizmos.DrawCube(_topLeft, Vector3.one);
+        Gizmos.DrawCube(_bottomLeft, Vector3.one);
+        Gizmos.DrawCube(_topRight, Vector3.one);
+        Gizmos.DrawCube(_bottomRight, Vector3.one);
     }
 
     public bool IsInside(Vector3 position)

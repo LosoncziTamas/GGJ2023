@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PolygonBuilder : MonoBehaviour
@@ -51,12 +53,68 @@ public class PolygonBuilder : MonoBehaviour
         {
             HandleStraightLine(startPos, endPos);
         }
-        else if (positionCount is < 4 and > 0)
+        else if (positionCount == 3)
         {
-            // TODO: adding algorithm
-            Add(_bottomLeft);
+            var start = _positions[0];
+            var end = _positions[2];
+            if (start.x < end.x)
+            {
+                Add(new Vector2(start.x, end.y));
+            }
+            else
+            {
+                Add(new Vector2(end.x, start.y));
+            }
+        }
+        else
+        {
+            var cornerToAdd = GetClosestCornerToPoints(_positions);
+            if (cornerToAdd.HasValue)
+            {
+                Add(cornerToAdd.Value);
+            }
         }
         _polygonCollider2D.points = _positions.ToArray();
+        var center = _polygonCollider2D.bounds.center;
+        var ordered = _positions.OrderBy(x => Math.Atan2(x.x - center.x, x.y - center.y)).ToList();
+        Debug.Log(" ordered " + ordered + " original " + _positions);
+        _polygonCollider2D.points = ordered.ToArray();
+    }
+
+    private float CalculateAccumulatedDistanceToCorner(List<Vector2> points, Vector2 corner)
+    {
+        var accumulatedDistance = 0f;
+        foreach (var point in points)
+        {
+            accumulatedDistance += Vector2.Distance(point, corner);
+        }
+        return accumulatedDistance;
+    }
+
+    private Vector2? GetClosestCornerToPoints(List<Vector2> points)
+    {
+        var topLeftDistance = CalculateAccumulatedDistanceToCorner(points, _topLeft);
+        var topRightDistance = CalculateAccumulatedDistanceToCorner(points, _topRight);
+        var bottomLeftDistance = CalculateAccumulatedDistanceToCorner(points, _bottomLeft);
+        var bottomRightDistance = CalculateAccumulatedDistanceToCorner(points, _bottomRight);
+        var minDistance = Mathf.Min(topLeftDistance, bottomLeftDistance, topRightDistance, bottomRightDistance);
+        if (Mathf.Approximately(minDistance, topLeftDistance))
+        {
+            return _topLeft;
+        }
+        if (Mathf.Approximately(minDistance, topRightDistance))
+        {
+            return _topRight;
+        }
+        if (Mathf.Approximately(minDistance, bottomLeftDistance))
+        {
+            return _bottomLeft;
+        }
+        if (Mathf.Approximately(minDistance, bottomRightDistance))
+        {
+            return _bottomRight;
+        }
+        return null;
     }
 
     private void HandleStraightLine(Vector2 startPos, Vector2 endPos)
@@ -95,6 +153,20 @@ public class PolygonBuilder : MonoBehaviour
                 Add(bottomToTop ? _bottomRight : _topRight);
             }
         }
+    }
+
+    public void UpdateCorners(List<Vector3> resolvedPositions)
+    {
+        
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        //Gizmos.DrawCube(_topLeft, Vector3.one);
+        //Gizmos.DrawCube(_bottomLeft, Vector3.one);
+        //Gizmos.DrawCube(_topRight, Vector3.one);
+        //Gizmos.DrawCube(_bottomRight, Vector3.one);
     }
 
     public bool IsInside(Vector3 position)

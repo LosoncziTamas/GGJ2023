@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class PlayerAnimationController : MonoBehaviour
@@ -9,6 +10,7 @@ public class PlayerAnimationController : MonoBehaviour
     private static readonly int DieProperty = Animator.StringToHash("Die");
     
     [SerializeField] private Animator _animator;
+    [SerializeField] private AudioSource _stepAudio;
 
     public void WalkForward()
     {
@@ -57,10 +59,17 @@ public class PlayerAnimationController : MonoBehaviour
 
     public void Stop()
     {
-        Debug.Log("PlayerAnimationController Stop");
         _animator.SetBool(WalkForwardProperty, false);
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
+        _stepAudio.Stop();
+    }
+
+    [UsedImplicitly]
+    public void OnStep()
+    {
+        Debug.Log("OnStep");
+        _stepAudio.Play();
     }
 }

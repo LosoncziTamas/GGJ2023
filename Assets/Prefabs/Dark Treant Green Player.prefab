@@ -5546,7 +5546,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 8473760833176746483}
-  _stepAudio: {fileID: 6325543185961961286}
+  _stepAudioClips:
+  - {fileID: 8300000, guid: 9fb5d8881bba84aaf86ac1c7752cd072, type: 3}
+  - {fileID: 8300000, guid: 8a1736d3922a74455be8e34f8a1331af, type: 3}
+  _audioSource: {fileID: 6325543185961961286}
 --- !u!82 &6325543185961961286
 AudioSource:
   m_ObjectHideFlags: 0

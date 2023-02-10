@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ public class PlayerAnimationController : MonoBehaviour
     private static readonly int DieProperty = Animator.StringToHash("Die");
     
     [SerializeField] private Animator _animator;
-    [SerializeField] private AudioSource _stepAudio;
+    [SerializeField] private List<AudioClip> _stepAudioClips;
+    [SerializeField] private AudioSource _audioSource;
 
     public void WalkForward()
     {
@@ -63,13 +65,16 @@ public class PlayerAnimationController : MonoBehaviour
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
-        _stepAudio.Stop();
+        _audioSource.Stop();
     }
 
     [UsedImplicitly]
     public void OnStep()
     {
         Debug.Log("OnStep");
-        _stepAudio.Play();
+        var clip = _stepAudioClips.GetRandom();
+        _audioSource.clip = clip;
+        _audioSource.Play();
     }
+    
 }

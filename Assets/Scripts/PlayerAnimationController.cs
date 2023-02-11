@@ -16,9 +16,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public void WalkForward()
     {
-        Debug.Log("PlayerAnimationController WalkForward");
         _animator.SetBool(WalkRightProperty, true);
-        
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkForwardProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
@@ -26,9 +24,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public void WalkBackward()
     {        
-        Debug.Log("PlayerAnimationController WalkBackward");
         _animator.SetBool(WalkLeftProperty, true);
-        
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkForwardProperty, false);
@@ -36,9 +32,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public void WalkRight()
     {
-        Debug.Log("PlayerAnimationController WalkRight");
         _animator.SetBool(WalkForwardProperty, true);
-        
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
@@ -46,9 +40,7 @@ public class PlayerAnimationController : MonoBehaviour
     
     public void WalkLeft()
     {
-        Debug.Log("PlayerAnimationController WalkLeft");
         _animator.SetBool(WalkBackwardProperty, true);
-        
         _animator.SetBool(WalkForwardProperty, false);
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
@@ -71,10 +63,8 @@ public class PlayerAnimationController : MonoBehaviour
     [UsedImplicitly]
     public void OnStep()
     {
-        Debug.Log("OnStep");
         var clip = _stepAudioClips.GetRandom();
         _audioSource.clip = clip;
         _audioSource.Play();
     }
-    
 }

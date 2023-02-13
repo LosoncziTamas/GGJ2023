@@ -1,3 +1,4 @@
+using System;
 using Configs;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -5,12 +6,11 @@ using Random = UnityEngine.Random;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private AntAnimationController _animationController;
-    [SerializeField] private Transform _child;
+    [SerializeField] private EnemyConfig _enemyConfig;
     
     private Vector2 _randomInput;
     private Vector3 _velocity;
     private Tile _closestTile;
-    private EnemyConfig _enemyConfig;
 
     private bool _captured;
 
@@ -26,11 +26,19 @@ public class Enemy : MonoBehaviour
         {
             _randomInput = Random.insideUnitCircle;
         }
-
         if (_animationController)
         {
             _animationController.Walk();
         }
+    }
+
+    private void Start()
+    {
+        if (_animationController)
+        {
+            _animationController.Walk();
+        }
+        _randomInput = Random.insideUnitCircle;
     }
 
     private void Update()
@@ -44,23 +52,24 @@ public class Enemy : MonoBehaviour
             return;
         }
         _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
-        _child.right = _velocity.normalized;
+        // transform.right = _velocity.normalized;
         var desiredDisplacement = _velocity * Time.deltaTime;
         var newPosition = transform.localPosition + desiredDisplacement;
         transform.position = newPosition;
     }
 
-    private void OnCollisionEnter(Collision collision)
+
+    private void OnTriggerEnter(Collider other)
     {
-        EvaluateCollision(collision);
+        EvaluateCollision(other);
     }
 
-    private void OnCollisionStay(Collision collisionInfo)
+    private void OnTriggerStay(Collider other)
     {
-        EvaluateCollision(collisionInfo);
+        EvaluateCollision(other);
     }
-    
-    private void EvaluateCollision(Collision other)
+
+    private void EvaluateCollision(Collider other)
     {
         if (_captured)
         {
@@ -105,12 +114,12 @@ public class Enemy : MonoBehaviour
         return true;
     }
 
-    private void InitializeTargetTile(Tile newTile, Collision collision)
+    private void InitializeTargetTile(Tile newTile, Collider tileCollider)
     {
         _closestTile = newTile;
         if (newTile.TileType == TileType.Walkable)
         {
-            ChangeDirection(collision);
+            ChangeDirection(tileCollider);
         }
         else
         {
@@ -118,7 +127,7 @@ public class Enemy : MonoBehaviour
         }
     }
     
-    private void UpdateClosestTile(Tile newTile, Collision collision)
+    private void UpdateClosestTile(Tile newTile, Collider tileCollider)
     {
         var selfPos = transform.position;
         var oldTile = _closestTile;
@@ -126,23 +135,24 @@ public class Enemy : MonoBehaviour
         var newDistance = Vector3.Distance(newTile.transform.position, selfPos);
         if (newDistance < oldDistance)
         {
-            InitializeTargetTile(newTile, collision);
+            InitializeTargetTile(newTile, tileCollider);
             oldTile.SetHighlightEnabled(false);
         }
         else if (newTile.TileType == TileType.Walkable)
         {
-            ChangeDirection(collision);
+            ChangeDirection(tileCollider);
         }
     }
 
-    private void ChangeDirection(Collision collision)
+    private void ChangeDirection(Collider tileCollider)
     {
         var contactNormal = Vector3.zero;
+        /*
         for (var i = 0; i < collision.contactCount; i++)
         {
             var normal = collision.GetContact(i).normal;
             contactNormal += normal;
-        }
+        }*/
         contactNormal.Normalize();
         var reflection = Vector3.Reflect(_velocity, transform.InverseTransformDirection(contactNormal));
         _randomInput = reflection.normalized;

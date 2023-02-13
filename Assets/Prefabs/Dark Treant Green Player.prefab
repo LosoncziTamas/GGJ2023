@@ -5448,6 +5448,7 @@ GameObject:
   - component: {fileID: 3278369466101027867}
   - component: {fileID: 6325543185961961286}
   - component: {fileID: 7538738965523056177}
+  - component: {fileID: 2912905698676376615}
   m_Layer: 0
   m_Name: Dark Treant Green Player
   m_TagString: Untagged
@@ -5521,6 +5522,7 @@ MonoBehaviour:
   _maxSpeed: 4.6
   _trail: {fileID: 8766535689273196049}
   _animationController: {fileID: 3278369466101027867}
+  _tileSequenceTracker: {fileID: 2912905698676376615}
 --- !u!65 &8473760833176746482
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5663,6 +5665,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2912905698676376615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8473760833184156231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8124bac98c74c69b3e2ac27d92a326f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8473760833184156233
 GameObject:
   m_ObjectHideFlags: 0

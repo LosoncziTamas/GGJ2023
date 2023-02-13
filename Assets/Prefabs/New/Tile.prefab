@@ -333,4 +333,6 @@ MonoBehaviour:
   _walkableColor: {fileID: 2100000, guid: 82867bd6ebbfe44448777a8890bb90dd, type: 2}
   _playerHighlight: {fileID: 2100000, guid: 4b8fd092b62a246c98602a8958137807, type: 2}
   _enemyHighLight: {fileID: 2100000, guid: 32adaadbece5541cb807bed7a5944f53, type: 2}
+  _capturingMaterial: {fileID: 2100000, guid: 5e1a3f81a56284c73afb960a934166ae, type: 2}
   _renderer: {fileID: 7463275995959634189}
+  _drawGizmos: 0

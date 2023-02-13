@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
     [SerializeField] private PlayerAnimationController _animationController;
+    [SerializeField] private TileSequenceTracker _tileSequenceTracker;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
@@ -204,7 +205,10 @@ public class PlayerController : MonoBehaviour
         {
             _slidingVelocity = null;
         }
-        _targetTile.SetHighlightEnabled(true, enemy: false);
+        if (!IsTileBeingCaptured(_targetTile))
+        {
+            _targetTile.SetHighlightEnabled(true, enemy: false);
+        }
         StartCoroutine(MoveToTile(_targetTile));
     }
     
@@ -223,15 +227,29 @@ public class PlayerController : MonoBehaviour
             }            
             else if (newTile.TileType == TileType.Slippery && lastTileWasWalkable)
             {
-                BeginSliding();
+                BeginSliding(oldTile, newTile);
+            }
+            else if (IsSliding)
+            {
+                AddTileToSequence(newTile);
             }
             InitializeTargetTile(newTile);
-            oldTile.SetHighlightEnabled(false);
+            if (!IsTileBeingCaptured(oldTile))
+            {
+                oldTile.SetHighlightEnabled(false);
+            }
         }
     }
-    
-    private void BeginSliding()
+
+    private bool IsTileBeingCaptured(Tile tile)
     {
+        return _tileSequenceTracker.TileIsInSequence(tile);
+    }
+    
+    private void BeginSliding(Tile oldTile, Tile newTile)
+    {
+        newTile.MarkCapturing();
+        _tileSequenceTracker.BeginTracking(oldTile, newTile);
         _slidingVelocity = _velocity.normalized * _maxSpeed;
         _trail.enabled = true;
     }
@@ -239,6 +257,12 @@ public class PlayerController : MonoBehaviour
     private void EndSliding(Tile newTile)
     {
         _trail.enabled = false;
+        _tileSequenceTracker.EndTracking(newTile);
+    }
 
+    private void AddTileToSequence(Tile newTile)
+    {
+        _tileSequenceTracker.Add(newTile);
+        newTile.MarkCapturing();
     }
 }

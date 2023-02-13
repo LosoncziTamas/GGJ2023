@@ -9,6 +9,7 @@ public class Tile : MonoBehaviour
     [SerializeField] private Material _walkableColor;
     [SerializeField] private Material _playerHighlight;
     [SerializeField] private Material _enemyHighLight;
+    [SerializeField] private Material _capturingMaterial;
     [SerializeField] private MeshRenderer _renderer;
     [SerializeField] private bool _drawGizmos;
 
@@ -76,6 +77,11 @@ public class Tile : MonoBehaviour
         {
             SetColors();
         }
+    }
+
+    public void MarkCapturing()
+    {
+        SetBorderMaterial(_capturingMaterial);
     }
 
     public void MarkResolved()

@@ -1,17 +1,7 @@
-using System;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class TrailElement : MonoBehaviour
 {
-
-    [SerializeField] private Transform _child;
-    
-    private void Start()
-    {
-        _child.rotation = Random.rotation;
-    }
-
     private void OnCollisionEnter(Collision collision)
     {
         EvaluateCollision(collision);
@@ -29,5 +19,11 @@ public class TrailElement : MonoBehaviour
             var gm = GameMaster.Instance;
             gm.LifeLost();
         }
+    }
+    
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position, transform.localScale);
     }
 }

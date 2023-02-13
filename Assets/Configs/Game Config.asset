@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c62ed99aaa234490aacee066e071704f, type: 3}
   m_Name: Game Config
   m_EditorClassIdentifier: 
-  TimeBetweenTrailSpawn: 0.03
+  TimeBetweenTrailSpawn: 0.14
   EnemyMaxSpeed: 2.3

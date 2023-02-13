@@ -1,31 +1,44 @@
+using UnityEditor;
 using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    [SerializeField] private TileType _tileType;
-    [SerializeField] private GameObject _highlightObject;
+    private static readonly Vector3 CenterOffset = new(0.5f, 0.5f, 0f);
+    
     [SerializeField] private Material _slipperyColor;
     [SerializeField] private Material _walkableColor;
     [SerializeField] private Material _playerHighlight;
     [SerializeField] private Material _enemyHighLight;
-    [SerializeField] private Renderer _highlightObjectRenderer;
-    
-    private Renderer _renderer;
-    private TileType _originalType;
-    
-    public TileType TileType => _tileType;
+    [SerializeField] private MeshRenderer _renderer;
+    [SerializeField] private bool _drawGizmos;
 
-    private void Awake()
+    private TileType _originalType;
+    private Transform _transform;
+
+    public TileType TileType { get; private set; }
+
+    public Vector2Int Coordinates { get; private set; }
+
+    public Vector3 Center => _transform.position + CenterOffset;
+
+    public void Init(TileType type, Vector2Int coordinates)
     {
-        _renderer = GetComponent<Renderer>();
-        _originalType = _tileType;
+        _originalType = TileType = type;
+        Coordinates = coordinates;
+        SetColors();
+        gameObject.name = $"{type.ToString().Substring(0, 3)} Tile {Coordinates.x} {Coordinates.y}";
     }
 
     public void ResetToDefault()
     {
-        _tileType = _originalType;
+        TileType = _originalType;
         SetHighlightEnabled(false);
         SetColors();
+    }
+
+    private void Awake()
+    {
+        _transform = gameObject.transform;
     }
 
     private void Start()
@@ -33,33 +46,51 @@ public class Tile : MonoBehaviour
         SetColors();
     }
 
+    private void SetBorderMaterial(Material material)
+    {
+        var materials = _renderer.materials;
+        const int borderMaterialIndex = 0;
+        materials[borderMaterialIndex] = material;
+        _renderer.materials = materials;
+    }
+
     private void SetColors()
     {
-        if (_tileType == TileType.Slippery)
+        if (TileType == TileType.Slippery)
         {
-            _renderer.material = _slipperyColor;
+            SetBorderMaterial(_slipperyColor);
         }
-        else if (_tileType == TileType.Walkable)
+        else if (TileType == TileType.Walkable)
         {
-            _renderer.material = _walkableColor;
+            SetBorderMaterial(_walkableColor);
         }
     }
 
     public void SetHighlightEnabled(bool highlightEnabled, bool enemy = false)
     {
-        _highlightObject.gameObject.SetActive(highlightEnabled);
         if (highlightEnabled)
         {
-            _highlightObjectRenderer.material = enemy ? _enemyHighLight : _playerHighlight;
+            SetBorderMaterial(enemy ? _enemyHighLight : _playerHighlight);
+        }
+        else
+        {
+            SetColors();
         }
     }
 
     public void MarkResolved()
     {
-        _tileType = TileType.Walkable;
+        TileType = TileType.Walkable;
         SetColors();
     }
 
-    public bool OriginallyWalkable() => _originalType == TileType.Walkable;
+    private void OnDrawGizmos()
+    {
+        if (_drawGizmos)
+        {
+            Handles.Label(Center, $"{Coordinates.x} {Coordinates.y}");
+        }
+    }
+
     public bool OriginallySlippery() => _originalType == TileType.Slippery;
 }

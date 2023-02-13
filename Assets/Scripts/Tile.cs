@@ -84,7 +84,7 @@ public class Tile : MonoBehaviour
         SetBorderMaterial(_capturingMaterial);
     }
 
-    public void MarkResolved()
+    public void MarkCaptured()
     {
         TileType = TileType.Walkable;
         SetColors();

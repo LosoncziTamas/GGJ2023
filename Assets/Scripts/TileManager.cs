@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TileManager : MonoBehaviour
@@ -36,8 +37,22 @@ public class TileManager : MonoBehaviour
                 var type = IsWalkableTile(rowIndex, columnIndex) ? TileType.Walkable : TileType.Slippery;
                 var coordinates = new Vector2Int(columnIndex, rowIndex);
                 tile.Init(type, coordinates);
+                _tiles[rowIndex * ColumnCount + columnIndex] = tile;
             }
         }
+    }
+
+    public List<Tile> GetTileByType(TileType type)
+    {
+        var result = new List<Tile>();
+        foreach (var tile in _tiles)
+        {
+            if (type == tile.TileType)
+            {
+                result.Add(tile);
+            }
+        }
+        return result;
     }
 
     private static bool IsWalkableTile(int rowIndex, int columnIndex)

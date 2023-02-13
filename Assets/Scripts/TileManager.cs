@@ -22,7 +22,7 @@ public class TileManager : MonoBehaviour
         _tiles = new Tile[ColumnCount * RowCount];
         var offsetX = 1.0f;
         var offsetY = 1.0f;
-        var offsetZ = -0.375f;
+        var offsetZ = -0.4f;
         var startX = -9.0f;
         var startY = -5.5f;
         for (var rowIndex = 0; rowIndex < RowCount; rowIndex++)

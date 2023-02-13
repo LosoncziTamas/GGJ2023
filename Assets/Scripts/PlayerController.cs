@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private const int MaxTurnCount = 1;
-    
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
     [SerializeField] private PlayerAnimationController _animationController;
@@ -14,40 +12,27 @@ public class PlayerController : MonoBehaviour
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
     private Tile _targetTile;
-    private Tile _lastWalkableTile;
-    private PolygonBuilder _polygonBuilder;
-    private List<Tile> _allTiles;
     private Vector3? _slidingVelocity;
     private Vector3 _velocity;
-    private Vector2 _lastPlayerInput;
     private Vector3 _startPosition;
-    private int _currentTurnCount;
-    private TurnDisplay _turnDisplay;
     
     private bool IsSliding => _slidingVelocity.HasValue;
 
     public void ResetToDefault()
     {
         _targetTile = null;
-        _lastWalkableTile = null;
         _slidingVelocity = null;
         _velocity = Vector3.zero;
-        _lastPlayerInput = Vector2.zero;
         transform.position = _startPosition;
         _isMoving = false;
         _trail.enabled = false;
-        _currentTurnCount = 0;
-        _polygonBuilder.ResetCorners();
         StopAllCoroutines();
         _animationController.Stop();
     }
     
     private void Start()
     {
-        _allTiles = new List<Tile>(FindObjectsOfType<Tile>(includeInactive: true));
-        _polygonBuilder = FindObjectOfType<PolygonBuilder>();
         _startPosition = transform.position;
-        _turnDisplay = FindObjectOfType<TurnDisplay>(true);
     }
 
     private void Update()
@@ -55,15 +40,6 @@ public class PlayerController : MonoBehaviour
         if (_isMoving)
         {
             return;
-        }
-        if (!GameMaster.Instance.Running)
-        {
-            _turnDisplay.gameObject.SetActive(false);
-        }
-        else
-        {
-            _turnDisplay.SetCount(MaxTurnCount - _currentTurnCount);
-            _turnDisplay.gameObject.SetActive(true);
         }
         var newPosition = VelocityBasedMovement();
         if (!_allowedArea.Contains(new Vector2(newPosition.x, newPosition.z)))
@@ -91,12 +67,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 VelocityBasedMovement()
     {
         var playerInput = ReadInput();
-        _lastPlayerInput = playerInput;
-        if (_slidingVelocity.HasValue)
-        {
-            HandleSlidingMovement(playerInput, _slidingVelocity.Value);
-        }
-        else
+        if (!_slidingVelocity.HasValue)
         {
             _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
         }
@@ -142,53 +113,7 @@ public class PlayerController : MonoBehaviour
     {
         _animationController.Die();
     }
-
-    private void HandleSlidingMovement(Vector2 playerInput, Vector3 velocity)
-    {
-        if (Mathf.Approximately(playerInput.magnitude, 0.0f) || _currentTurnCount == MaxTurnCount)
-        {
-            _velocity = velocity;
-        }
-        else
-        {
-            var directionChanged = false;
-            var slidingLeft = velocity.x < 0;
-            var slidingRight = velocity.x > 0;
-            if ((slidingLeft || slidingRight) && playerInput.y > 0)
-            {
-                _animationController.WalkForward();
-                _velocity = new Vector3(0, 0f, 1.0f) * _maxSpeed;
-                directionChanged = true;
-            }
-            else if ((slidingLeft || slidingRight) && playerInput.y < 0)
-            {
-                _animationController.WalkBackward();
-                _velocity = new Vector3(0, 0f, -1.0f) * _maxSpeed;
-                directionChanged = true;
-            }
-            var slidingUp = velocity.z > 0;
-            var slidingDown = velocity.z < 0;
-            if ((slidingUp || slidingDown) && playerInput.x > 0)
-            {
-                _animationController.WalkRight();
-                _velocity = new Vector3(1.0f,0.0f, 0.0f) * _maxSpeed;
-                directionChanged = true;
-            }
-            else if ((slidingUp || slidingDown) && playerInput.x < 0)
-            {
-                _animationController.WalkLeft();
-                _velocity = new Vector3(-1.0f, 0f, 0.0f) * _maxSpeed;
-                directionChanged = true;
-            }
-            if (directionChanged)
-            {
-                _currentTurnCount++;
-                _polygonBuilder.Add(_targetTile.transform.position);
-                _slidingVelocity = _velocity;
-            }
-        }
-    }
-
+    
     private Vector2 ReadInput()
     {
         var playerInput = Vector2.zero;
@@ -208,7 +133,6 @@ public class PlayerController : MonoBehaviour
         else
         {
             playerInput = Vector2.zero;
-            //playerInput = _lastPlayerInput;
         }
         return playerInput;
     }
@@ -220,7 +144,7 @@ public class PlayerController : MonoBehaviour
             yield break;
         }
         _isMoving = true;
-        var targetPosition = new Vector3(targetTile.transform.position.x, targetTile.transform.position.y, transform.position.z);
+        var targetPosition = new Vector3(targetTile.Center.x, targetTile.Center.y, transform.position.z);
         while (true)
         {
             // TODO: use more elegant fix for repositioning
@@ -279,7 +203,6 @@ public class PlayerController : MonoBehaviour
         if (newTile.TileType == TileType.Walkable)
         {
             _slidingVelocity = null;
-            _lastWalkableTile = newTile;
         }
         _targetTile.SetHighlightEnabled(true, enemy: false);
         StartCoroutine(MoveToTile(_targetTile));
@@ -289,8 +212,8 @@ public class PlayerController : MonoBehaviour
     {
         var selfPos = transform.position;
         var oldTile = _targetTile;
-        var oldDistance = Vector3.Distance(oldTile.transform.position, selfPos);
-        var newDistance = Vector3.Distance(newTile.transform.position, selfPos);
+        var oldDistance = Vector3.Distance(oldTile.Center, selfPos);
+        var newDistance = Vector3.Distance(newTile.Center, selfPos);
         if (newDistance < oldDistance)
         {
             var lastTileWasWalkable = oldTile.TileType == TileType.Walkable;
@@ -309,71 +232,13 @@ public class PlayerController : MonoBehaviour
     
     private void BeginSliding()
     {
-        _currentTurnCount = 0;
         _slidingVelocity = _velocity.normalized * _maxSpeed;
-        _polygonBuilder.Clear();
-        _polygonBuilder.Add(_targetTile.transform.position);
         _trail.enabled = true;
     }
 
     private void EndSliding(Tile newTile)
     {
-        _currentTurnCount = 0;
         _trail.enabled = false;
-        _polygonBuilder.Add(newTile.transform.position);
-        _polygonBuilder.Build(out var polygonBuildInfo);
-        var tilesToFlip = GetTilesInPolygon();
-        foreach (var tile in tilesToFlip)
-        {
-            tile.MarkResolved();
-        }
-        CheckCompletion();
-        if (polygonBuildInfo.IsStraightLine)
-        {
-            UpdateCornersForPolygonCalculation(polygonBuildInfo, tilesToFlip);
-        }
-    }
-    
-    private void UpdateCornersForPolygonCalculation(PolygonBuilder.PolygonBuildInfo polygonBuildInfo, List<Tile> flippedTiles)
-    {
-        var potentialCorners = new List<Vector3>();
-        foreach (var tile in flippedTiles)
-        {
-            if (tile.OriginallySlippery() && tile.TileType == TileType.Walkable)
-            {
-                var tilePosition = tile.transform.position;
-                potentialCorners.Add(tilePosition);
-            }
-        }
-        _polygonBuilder.UpdateCorners(potentialCorners, polygonBuildInfo);
-    }
 
-    private void CheckCompletion()
-    {
-        var walkableCount = 0;
-        foreach (var tile in _allTiles)
-        {
-            if (tile.TileType == TileType.Walkable)
-            {
-                walkableCount++;
-            }
-        }
-        if (walkableCount == _allTiles.Count)
-        {
-            GameMaster.Instance.MoveToNextLevel();
-        }
-    }
-
-    private List<Tile> GetTilesInPolygon()
-    {
-        var result = new List<Tile>();
-        foreach (var tile in _allTiles)
-        {
-            if (_polygonBuilder.IsInside(tile.transform.position))
-            {
-                result.Add(tile);
-            }
-        }
-        return result;
     }
 }

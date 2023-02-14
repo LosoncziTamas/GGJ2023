@@ -91,23 +91,7 @@ public class PlayerAnimationAndAudioController : MonoBehaviour
         _stepsAudioSource.clip = clip;
         _stepsAudioSource.Play();
     }
-
-    private void OnGUI()
-    {
-        if (GUILayout.Button("PlayDieSound"))
-        {
-            PlayDieSound();
-        }
-        if (GUILayout.Button("PlayLaughSound"))
-        {
-            PlayLaughSound();
-        }
-        if (GUILayout.Button("PlayImpactSound"))
-        {
-            PlayImpactSound();
-        }
-    }
-
+    
     public void PlayDieSound()
     {
         _casualAudioSource.clip = _dieAudioClip;

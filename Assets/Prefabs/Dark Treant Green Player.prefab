@@ -5521,10 +5521,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ef63b29a8349ecac5dfabbc2b38ed9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxSpeed: 4.6
   _trail: {fileID: 8766535689273196049}
   _animationAndAudioController: {fileID: 3278369466101027867}
   _tileSequenceTracker: {fileID: 2912905698676376615}
+  _gameConfig: {fileID: 11400000, guid: c87358d4127d34163befe01fd777a1fb, type: 2}
 --- !u!65 &8473760833176746482
 BoxCollider:
   m_ObjectHideFlags: 0

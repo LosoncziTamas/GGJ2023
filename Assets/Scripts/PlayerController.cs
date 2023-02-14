@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Configs;
 using Gui;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
     [SerializeField] private PlayerAnimationAndAudioController _animationAndAudioController;
     [SerializeField] private TileSequenceTracker _tileSequenceTracker;
+    [SerializeField] private GameConfig _gameConfig;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
@@ -71,7 +72,7 @@ public class PlayerController : MonoBehaviour
         var playerInput = ReadInput();
         if (!_slidingVelocity.HasValue)
         {
-            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _maxSpeed;
+            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _gameConfig.PlayerMaxSpeed;
         }
         UpdateAnimation();
         var desiredDisplacement = _velocity * Time.deltaTime;
@@ -103,10 +104,6 @@ public class PlayerController : MonoBehaviour
             else if (z < 0)
             {
                 _animationAndAudioController.WalkBackward();
-            }
-            else
-            {
-                Debug.Break();
             }
         }
     }
@@ -164,7 +161,7 @@ public class PlayerController : MonoBehaviour
                 _isMoving = false;
                 yield break;
             }
-            var newPos = Vector3.MoveTowards(transform.position, targetPosition, _maxSpeed * Time.deltaTime);
+            var newPos = Vector3.MoveTowards(transform.position, targetPosition, _gameConfig.PlayerMaxSpeed * Time.deltaTime);
             transform.position = newPos;
             yield return null;
         }
@@ -253,7 +250,7 @@ public class PlayerController : MonoBehaviour
     {
         newTile.MarkCapturing();
         _tileSequenceTracker.BeginTracking(oldTile, newTile);
-        _slidingVelocity = _velocity.normalized * _maxSpeed;
+        _slidingVelocity = _velocity.normalized * _gameConfig.PlayerMaxSpeed;
         _trail.enabled = true;
     }
 

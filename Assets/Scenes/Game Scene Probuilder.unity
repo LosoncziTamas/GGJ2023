@@ -5002,6 +5002,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 480959296}
     m_Modifications:
+    - target: {fileID: 8473760833176746485, guid: 39ddf5e1841d24537b608c9b8383b919, type: 3}
+      propertyPath: _gameConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: c87358d4127d34163befe01fd777a1fb, type: 2}
     - target: {fileID: 8473760833183733251, guid: 39ddf5e1841d24537b608c9b8383b919, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: -85.906784

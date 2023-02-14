@@ -43,7 +43,7 @@ public class TileSequenceTracker : MonoBehaviour
         _sequence.Add(endTile);
         SpawnRootsAndCaptureSurroundedTiles();
     }
-
+    
     private void SpawnRootsAndCaptureSurroundedTiles()
     {
         var sequenceLength = _sequence.Count;
@@ -65,6 +65,7 @@ public class TileSequenceTracker : MonoBehaviour
         }
         else
         {
+            Debug.LogError($"Neither horizontal or vertical, start: {startTile} end: {endTile}.");
             Debug.Break();
         }
         foreach (var capturedTile in capturedTiles)

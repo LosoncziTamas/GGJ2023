@@ -16,4 +16,9 @@ public class AntAnimationController : MonoBehaviour
         _animator.SetBool(WalkProperty, false);
     }
     
+    public void Die()
+    {
+        _animator.SetBool(WalkProperty, false);
+    }
+    
 }

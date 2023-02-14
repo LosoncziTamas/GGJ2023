@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class TileSequenceTracker : MonoBehaviour
 {
@@ -10,7 +12,9 @@ public class TileSequenceTracker : MonoBehaviour
     [SerializeField] private GameObject _doubleRootPrefab;
 
     private TileManager _tileManager;
-    public event Action OnTilesCaptured; 
+    public event Action OnTilesCaptured;
+
+    private List<GameObject> _roots = new();
 
     private void Awake()
     {
@@ -130,59 +134,91 @@ public class TileSequenceTracker : MonoBehaviour
             {
                 var currentTile = slipperyTiles[i];
                 var nextTile = slipperyTiles[i + 1];
-                SpawnDoubleRoot(orientation, currentTile, nextTile);
+                _roots.Add(SpawnDoubleRoot(orientation, currentTile, nextTile));
                 i++;
             }
         }
         else
         {
             var firstTile = slipperyTiles[0];
-            SpawnSingleRoot(orientation, firstTile);
+            _roots.Add(SpawnSingleRoot(orientation, firstTile));
             for (var i = 1; i < tileCount; i++)
             {
                 var currentTile = slipperyTiles[i];
                 var nextTile = slipperyTiles[i + 1];
-                SpawnDoubleRoot(orientation, currentTile, nextTile);
+                _roots.Add(SpawnDoubleRoot(orientation, currentTile, nextTile));
                 i++;
             }
         }
+        PlayerAnimationAndAudioController.Instance.PlayImpactSound();
     }
 
-    private void SpawnDoubleRoot(Orientation orientation, Tile currentTile, Tile nextTile)
+    private GameObject SpawnDoubleRoot(Orientation orientation, Tile currentTile, Tile nextTile)
     {
+        var randomZOffset = Random.Range(0.1f, 0.4f);
+        const float startZOffset = 1.0f;
+        GameObject rootInstance;
         if (orientation == Orientation.Horizontal)
         {
             var x = (currentTile.Center.x + nextTile.Center.x) * 0.5f;
             var y = currentTile.Center.y;
-            var z = currentTile.Center.z;
-            var rootInstance = Instantiate(_doubleRootPrefab);
-            rootInstance.transform.position = new Vector3(x, y, z);
-            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, 90);
+            var z = currentTile.Center.z - randomZOffset;
+            var startZ = currentTile.Center.z + startZOffset;
+            rootInstance = Instantiate(_doubleRootPrefab);
+            rootInstance.transform.position = new Vector3(x, y, startZ);
+            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(70, 100));
+            CreateRootSpawnAnim(rootInstance, z);
         }
         else
         {
             var x = currentTile.Center.x;
             var y = (currentTile.Center.y + nextTile.Center.y) * 0.5f;
-            var z = currentTile.Center.z;
-            var rootInstance = Instantiate(_doubleRootPrefab);
-            rootInstance.transform.position = new Vector3(x, y, z);
-            rootInstance.transform.localRotation = Quaternion.identity;
+            var z = currentTile.Center.z - randomZOffset;
+            var startZ = currentTile.Center.z + startZOffset;
+            rootInstance = Instantiate(_doubleRootPrefab);
+            rootInstance.transform.position = new Vector3(x, y, startZ);
+            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-20, 10));
+            CreateRootSpawnAnim(rootInstance, z);
         }
+        return rootInstance;
     }
 
-    private void SpawnSingleRoot(Orientation orientation, Tile currentTile)
+    private Sequence CreateRootSpawnAnim(GameObject rootInstance, float z)
     {
+        return DOTween.Sequence(rootInstance.transform.DOMoveZ(z, 0.3f).SetEase(Ease.InOutBack))
+            .Insert(0.15f, rootInstance.transform.DOPunchScale(Vector3.one, 0.3f));
+    }
+
+    private GameObject SpawnSingleRoot(Orientation orientation, Tile currentTile)
+    {
+        var randomZOffset = Random.Range(0.1f, 0.4f);
+        const float startZOffset = 1.0f;
         var rootInstance = Instantiate(_singleRootPrefab);
         if (orientation == Orientation.Horizontal)
         {
-            rootInstance.transform.position = currentTile.Center;
-            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, 90);
+            var startZ = currentTile.Center.z + startZOffset;
+            rootInstance.transform.position = new Vector3(currentTile.Center.x, currentTile.Center.y, startZ);
+            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(70, 100));
+            CreateRootSpawnAnim(rootInstance, currentTile.Center.z - randomZOffset);
         }
         else
         {
-            rootInstance.transform.position = currentTile.Center;
-            rootInstance.transform.localRotation = Quaternion.identity;
+            var startZ = currentTile.Center.z + startZOffset;
+            rootInstance.transform.position = new Vector3(currentTile.Center.x, currentTile.Center.y, startZ);
+            rootInstance.transform.localRotation = Quaternion.Euler(0, 0, Random.Range(-20, 10));
+            CreateRootSpawnAnim(rootInstance, currentTile.Center.z - randomZOffset);
         }
+        return rootInstance;
+    }
+
+    public void DestroyRoots()
+    {
+        foreach (var root in _roots)
+        {
+            CreateRootSpawnAnim(root, root.transform.position.z + 1.0f);
+            Destroy(root, 0.45f);
+        }
+        _roots.Clear();
     }
 
     private bool IsOddNumberOfTiles(List<Tile> tiles)

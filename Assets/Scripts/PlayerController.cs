@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField, Range(0f, 100f)] private float _maxSpeed = 10f;
     [SerializeField] private Trail _trail;
-    [SerializeField] private PlayerAnimationController _animationController;
+    [SerializeField] private PlayerAnimationAndAudioController _animationAndAudioController;
     [SerializeField] private TileSequenceTracker _tileSequenceTracker;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _velocity;
     private Vector3 _startPosition;
     
-    private bool IsSliding => _slidingVelocity.HasValue;
+    public bool IsSliding => _slidingVelocity.HasValue;
 
     public void ResetToDefault()
     {
@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
         _isMoving = false;
         _trail.enabled = false;
         StopAllCoroutines();
-        _animationController.Stop();
+        _animationAndAudioController.Stop();
         enabled = true;
     }
     
@@ -82,7 +82,7 @@ public class PlayerController : MonoBehaviour
     {
         if (_velocity.magnitude == 0)
         {
-            _animationController.Stop();
+            _animationAndAudioController.Stop();
         }
         else
         {
@@ -90,19 +90,19 @@ public class PlayerController : MonoBehaviour
             var z = _velocity.z;
             if (x > 0)
             {
-                _animationController.WalkRight();
+                _animationAndAudioController.WalkRight();
             }
             else if (x < 0)
             {
-                _animationController.WalkLeft();
+                _animationAndAudioController.WalkLeft();
             }
             else if (z > 0)
             {
-                _animationController.WalkForward();
+                _animationAndAudioController.WalkForward();
             }
             else if (z < 0)
             {
-                _animationController.WalkBackward();
+                _animationAndAudioController.WalkBackward();
             }
             else
             {
@@ -113,7 +113,7 @@ public class PlayerController : MonoBehaviour
 
     public void Die()
     {
-        _animationController.Die();
+        _animationAndAudioController.Die();
         StopAllCoroutines();
         enabled = false;
     }

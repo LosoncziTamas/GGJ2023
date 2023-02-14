@@ -1,8 +1,13 @@
+using System;
+using System.Collections.Generic;
 using Configs;
+using DG.Tweening;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    public static List<Enemy> Instances = new List<Enemy>();
+
     [SerializeField] private AntAnimationController _animationController;
     [SerializeField] private EnemyConfig _enemyConfig;
     [SerializeField] private bool _drawGizmos;
@@ -11,14 +16,22 @@ public class Enemy : MonoBehaviour
     private Tile _closestTile;
     private Tile _targetTile;
 
-    private bool _captured;
+    private bool _isIdle;
     private TileSequenceTracker _sequenceTracker;
     private TileManager _tileManager;
+    private Vector3 _originalScale;
+    private Transform _transform;
+
+    public bool Idle => _isIdle;
 
     private void Awake()
     {
+        Instances.Add(this);
+        _transform = transform;
         _sequenceTracker = FindObjectOfType<TileSequenceTracker>();
         _tileManager = FindObjectOfType<TileManager>();
+        _originalScale = _transform.localScale;
+        _transform.localScale = Vector3.one * 0.01f;
     }
 
     private void OnEnable()
@@ -52,18 +65,8 @@ public class Enemy : MonoBehaviour
                // TODO: check capture?
            }
            _targetTile = newTile;
-           _targetTile.SetHighlightEnabled(true);
        }
        Debug.Log("SelectRandomSlipperyTileAsTarget " + _targetTile.Coordinates);
-    }
-
-    private void Start()
-    {
-        if (_animationController)
-        {
-            _animationController.Walk();
-        }
-        SelectRandomSlipperyTileAsTarget();
     }
 
     private bool CheckCapture()
@@ -94,7 +97,7 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        if (_captured)
+        if (_isIdle)
         {
             if (_animationController)
             {
@@ -150,7 +153,7 @@ public class Enemy : MonoBehaviour
 
     private void EvaluateCollision(Collider other)
     {
-        if (_captured)
+        if (_isIdle)
         {
             return;
         }
@@ -203,27 +206,34 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void Die()
+    public void ClearFromLevel()
     {
-        _captured = true;
-        // Destroy(gameObject);
+        _isIdle = true;
+        _transform.DOScale(Vector3.zero, 0.4f).SetEase(Ease.InOutSine);
+        Destroy(gameObject, 0.4f);
+    }
+
+    private void OnDestroy()
+    {
+        Instances.Remove(this);
+    }
+
+    private void Die()
+    {
+        PlayerAnimationAndAudioController.Instance.PlayLaughSound();
+        _isIdle = true;
+        _animationController.Die();
     }
     
     public void Init(EnemyConfig enemyConfig)
     {
         transform.position = enemyConfig.SpawnLocation;
         _enemyConfig = enemyConfig;
-        if (enemyConfig.StartDirection.magnitude > 0)
-        {
-            // _randomInput = enemyConfig.StartDirection.normalized;
-        }
-        else
-        {
-            // _randomInput = Random.insideUnitCircle;
-        }
+        SelectRandomSlipperyTileAsTarget();
         if (_animationController)
         {
             _animationController.Walk();
         }
+        _transform.DOScale(_originalScale, 0.4f).SetEase(Ease.InOutSine);
     }
 }

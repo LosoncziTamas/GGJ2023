@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 
-public class PlayerAnimationController : MonoBehaviour
+public class PlayerAnimationAndAudioController : MonoBehaviour
 {
+    public static PlayerAnimationAndAudioController Instance;
+    
     private static readonly int WalkForwardProperty = Animator.StringToHash("Walk Forward");
     private static readonly int WalkBackwardProperty = Animator.StringToHash("Walk Backward");
     private static readonly int WalkRightProperty = Animator.StringToHash("Strafe Right");
@@ -12,7 +14,21 @@ public class PlayerAnimationController : MonoBehaviour
     
     [SerializeField] private Animator _animator;
     [SerializeField] private List<AudioClip> _stepAudioClips;
-    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _laughAudioClip;
+    [SerializeField] private AudioClip _dieAudioClip;
+    [SerializeField] private AudioClip _impactAudioClip;
+    [SerializeField] private AudioClip _woodHitAudioClip;
+    [SerializeField] private AudioSource _stepsAudioSource;
+    [SerializeField] private AudioSource _casualAudioSource;
+    [SerializeField] private AudioSource _impactAudioSource;
+
+    private PlayerController _playerController;
+    
+    private void Awake()
+    {
+        _playerController = GetComponent<PlayerController>();
+        Instance = this;
+    }
 
     public void WalkForward()
     {
@@ -57,14 +73,61 @@ public class PlayerAnimationController : MonoBehaviour
         _animator.SetBool(WalkBackwardProperty, false);
         _animator.SetBool(WalkRightProperty, false);
         _animator.SetBool(WalkLeftProperty, false);
-        _audioSource.Stop();
+        _stepsAudioSource.Stop();
     }
 
     [UsedImplicitly]
     public void OnStep()
     {
-        var clip = _stepAudioClips.GetRandom();
-        _audioSource.clip = clip;
-        _audioSource.Play();
+        AudioClip clip = null;
+        if (_playerController.IsSliding)
+        {
+            clip = _woodHitAudioClip;
+        }
+        else
+        {
+            clip = _stepAudioClips.GetRandom();
+        }
+        _stepsAudioSource.clip = clip;
+        _stepsAudioSource.Play();
+    }
+
+    private void OnGUI()
+    {
+        if (GUILayout.Button("PlayDieSound"))
+        {
+            PlayDieSound();
+        }
+        if (GUILayout.Button("PlayLaughSound"))
+        {
+            PlayLaughSound();
+        }
+        if (GUILayout.Button("PlayImpactSound"))
+        {
+            PlayImpactSound();
+        }
+    }
+
+    public void PlayDieSound()
+    {
+        _casualAudioSource.clip = _dieAudioClip;
+        _casualAudioSource.Play();
+    }
+
+    public void PlayLaughSound()
+    {
+        _casualAudioSource.clip = _laughAudioClip;
+        _casualAudioSource.Play();
+    }
+
+    public void PlayImpactSound()
+    {
+        _impactAudioSource.clip = _impactAudioClip;
+        _impactAudioSource.Play();
+    }
+
+    private void OnDestroy()
+    {
+        Instance = null;
     }
 }

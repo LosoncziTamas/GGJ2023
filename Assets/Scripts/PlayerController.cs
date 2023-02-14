@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
         _trail.enabled = false;
         StopAllCoroutines();
         _animationController.Stop();
+        enabled = true;
     }
     
     private void Start()
@@ -113,6 +114,8 @@ public class PlayerController : MonoBehaviour
     public void Die()
     {
         _animationController.Die();
+        StopAllCoroutines();
+        enabled = false;
     }
     
     private Vector2 ReadInput()

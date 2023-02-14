@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class TileSequenceTracker : MonoBehaviour
     [SerializeField] private GameObject _doubleRootPrefab;
 
     private TileManager _tileManager;
+    public event Action OnTilesCaptured; 
 
     private void Awake()
     {
@@ -64,6 +66,11 @@ public class TileSequenceTracker : MonoBehaviour
         foreach (var capturedTile in capturedTiles)
         {
             capturedTile.MarkCaptured();
+        }
+
+        if (capturedTiles.Count > 0)
+        {
+            OnTilesCaptured?.Invoke();
         }
     }
 

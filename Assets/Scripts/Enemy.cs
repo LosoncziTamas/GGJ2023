@@ -1,35 +1,50 @@
 using System;
 using Configs;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private AntAnimationController _animationController;
     [SerializeField] private EnemyConfig _enemyConfig;
     
-    private Vector2 _randomInput;
     private Vector3 _velocity;
     private Tile _closestTile;
+    private Tile _targetTile;
 
     private bool _captured;
+    private TileSequenceTracker _sequenceTracker;
+    private TileManager _tileManager;
 
-    public void Init(EnemyConfig enemyConfig)
+    private void Awake()
     {
-        transform.position = enemyConfig.SpawnLocation;
-        _enemyConfig = enemyConfig;
-        if (enemyConfig.StartDirection.magnitude > 0)
-        {
-            _randomInput = enemyConfig.StartDirection.normalized;
-        }
-        else
-        {
-            _randomInput = Random.insideUnitCircle;
-        }
-        if (_animationController)
-        {
-            _animationController.Walk();
-        }
+        _sequenceTracker = FindObjectOfType<TileSequenceTracker>();
+        _tileManager = FindObjectOfType<TileManager>();
+    }
+
+    private void OnEnable()
+    {
+        _sequenceTracker.OnTilesCaptured += SelectRandomSlipperyTileAsTarget;
+    }
+    
+    private void OnDisable()
+    {
+        _sequenceTracker.OnTilesCaptured -= SelectRandomSlipperyTileAsTarget;
+    }
+
+    private void SelectRandomSlipperyTileAsTarget()
+    {
+       var tiles =  _tileManager.GetTileByType(TileType.Slippery);
+       if (tiles.Count > 0)
+       {
+           var newTile = tiles.GetRandom();
+           while (newTile == _targetTile)
+           {
+               newTile = tiles.GetRandom();
+               // TODO: check capture?
+           }
+           _targetTile = newTile;
+           _targetTile.SetHighlightEnabled(true);
+       }
     }
 
     private void Start()
@@ -38,7 +53,13 @@ public class Enemy : MonoBehaviour
         {
             _animationController.Walk();
         }
-        _randomInput = Random.insideUnitCircle;
+        SelectRandomSlipperyTileAsTarget();
+    }
+
+    private bool CheckCapture()
+    {
+        _captured = false;
+        return false;
     }
 
     private void Update()
@@ -51,11 +72,35 @@ public class Enemy : MonoBehaviour
             }
             return;
         }
-        _velocity = new Vector3(_randomInput.x, _randomInput.y, 0f) * _enemyConfig.EnemyMaxSpeed;
-        // transform.right = _velocity.normalized;
-        var desiredDisplacement = _velocity * Time.deltaTime;
-        var newPosition = transform.localPosition + desiredDisplacement;
-        transform.position = newPosition;
+
+        if (Vector3.Distance(_targetTile.Center, transform.position) < 0.1f)
+        {
+            SelectRandomSlipperyTileAsTarget();
+        }
+        else
+        {
+            var input = _targetTile.Center - transform.position;
+            input.Normalize();
+            transform.up = input;
+            _velocity = new Vector3(input.x, input.y, input.z) * _enemyConfig.EnemyMaxSpeed;
+            var desiredDisplacement = _velocity * Time.deltaTime;
+            var newPosition = transform.localPosition + desiredDisplacement;
+            transform.position = newPosition;
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + transform.right * 4.0f);
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, transform.position + transform.up * 4.0f);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, transform.position + transform.forward * 4.0f);
+        var input = _targetTile.Center - transform.position;
+        Gizmos.color = Color.magenta;
+        input.Normalize();
+        Gizmos.DrawLine(transform.position, transform.position + input * 4.0f);
     }
 
 
@@ -90,36 +135,16 @@ public class Enemy : MonoBehaviour
         }
         if (_closestTile.TileType == TileType.Walkable)
         {
-            _captured = CheckCapture();
+            CheckCapture();
         }
     }
-
-    private bool CheckCapture()
-    {
-        // TODO: optimize
-        var hitColliders = Physics.OverlapBox(gameObject.transform.position, transform.localScale, Quaternion.identity);
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.gameObject.CompareTag(Tags.TileTag))
-            {
-                var nearbyTile = hitCollider.GetComponent<Tile>();
-                if (nearbyTile.TileType == TileType.Slippery)
-                {
-                    Debug.Log("CheckCapture: false");
-                    return false;
-                }
-            }
-        }
-        Debug.Log("CheckCapture: true");
-        return true;
-    }
-
+    
     private void InitializeTargetTile(Tile newTile, Collider tileCollider)
     {
         _closestTile = newTile;
         if (newTile.TileType == TileType.Walkable)
         {
-            ChangeDirection(tileCollider);
+            CheckCapture();
         }
         else
         {
@@ -131,8 +156,8 @@ public class Enemy : MonoBehaviour
     {
         var selfPos = transform.position;
         var oldTile = _closestTile;
-        var oldDistance = Vector3.Distance(oldTile.transform.position, selfPos);
-        var newDistance = Vector3.Distance(newTile.transform.position, selfPos);
+        var oldDistance = Vector3.Distance(oldTile.Center, selfPos);
+        var newDistance = Vector3.Distance(newTile.Center, selfPos);
         if (newDistance < oldDistance)
         {
             InitializeTargetTile(newTile, tileCollider);
@@ -140,26 +165,30 @@ public class Enemy : MonoBehaviour
         }
         else if (newTile.TileType == TileType.Walkable)
         {
-            ChangeDirection(tileCollider);
+            CheckCapture();
         }
-    }
-
-    private void ChangeDirection(Collider tileCollider)
-    {
-        var contactNormal = Vector3.zero;
-        /*
-        for (var i = 0; i < collision.contactCount; i++)
-        {
-            var normal = collision.GetContact(i).normal;
-            contactNormal += normal;
-        }*/
-        contactNormal.Normalize();
-        var reflection = Vector3.Reflect(_velocity, transform.InverseTransformDirection(contactNormal));
-        _randomInput = reflection.normalized;
     }
 
     public void Die()
     {
         Destroy(gameObject);
+    }
+    
+    public void Init(EnemyConfig enemyConfig)
+    {
+        transform.position = enemyConfig.SpawnLocation;
+        _enemyConfig = enemyConfig;
+        if (enemyConfig.StartDirection.magnitude > 0)
+        {
+            // _randomInput = enemyConfig.StartDirection.normalized;
+        }
+        else
+        {
+            // _randomInput = Random.insideUnitCircle;
+        }
+        if (_animationController)
+        {
+            _animationController.Walk();
+        }
     }
 }

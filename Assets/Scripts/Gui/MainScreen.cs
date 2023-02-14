@@ -37,9 +37,9 @@ namespace Gui
         private async void OnStartButtonClick()
         {
             await CreateDisappearAnimSequence().AsyncWaitForCompletion();
-            var result = await GameMaster.Instance.StartGame();
+            // var result = await GameMaster.Instance.StartGame();
             await CreateAppearAnimSequence().AsyncWaitForCompletion();
-            if (result == GameResult.Completed)
+            // if (result == GameResult.Completed)
             {
                 // TODO: display modal
             }

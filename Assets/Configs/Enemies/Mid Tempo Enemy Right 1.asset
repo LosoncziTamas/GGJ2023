@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Mid Tempo Enemy Right 1
   m_EditorClassIdentifier: 
   EnemyMaxSpeed: 3.7
-  SpawnLocation: {x: 4.5, y: -0.00000005960464, z: -1}
+  SpawnLocation: {x: 4.5, y: -0.00000005960464, z: -0.4}
   StartDirection: {x: 0, y: 0}

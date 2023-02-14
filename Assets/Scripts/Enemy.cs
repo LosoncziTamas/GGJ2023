@@ -1,4 +1,3 @@
-using System;
 using Configs;
 using UnityEngine;
 
@@ -6,6 +5,7 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField] private AntAnimationController _animationController;
     [SerializeField] private EnemyConfig _enemyConfig;
+    [SerializeField] private bool _drawGizmos;
     
     private Vector3 _velocity;
     private Tile _closestTile;
@@ -23,12 +23,21 @@ public class Enemy : MonoBehaviour
 
     private void OnEnable()
     {
-        _sequenceTracker.OnTilesCaptured += SelectRandomSlipperyTileAsTarget;
+        _sequenceTracker.OnTilesCaptured += OnTilesCaptured;
     }
     
     private void OnDisable()
     {
-        _sequenceTracker.OnTilesCaptured -= SelectRandomSlipperyTileAsTarget;
+        _sequenceTracker.OnTilesCaptured -= OnTilesCaptured;
+    }
+
+    private void OnTilesCaptured()
+    {
+        Debug.Log("OnTilesCaptured");
+        if (!CheckCapture())
+        {
+            SelectRandomSlipperyTileAsTarget();
+        }
     }
 
     private void SelectRandomSlipperyTileAsTarget()
@@ -45,6 +54,7 @@ public class Enemy : MonoBehaviour
            _targetTile = newTile;
            _targetTile.SetHighlightEnabled(true);
        }
+       Debug.Log("SelectRandomSlipperyTileAsTarget " + _targetTile.Coordinates);
     }
 
     private void Start()
@@ -58,7 +68,27 @@ public class Enemy : MonoBehaviour
 
     private bool CheckCapture()
     {
-        _captured = false;
+        if (_closestTile.TileType == TileType.Walkable)
+        {
+            Die();
+            return true;
+        }
+        var surroundingTiles = _tileManager.GetSurroundingTiles(_closestTile);
+        var hasSlipperySurrounding = false;
+        foreach (var surroundingTile in surroundingTiles)
+        {
+            if (surroundingTile.TileType == TileType.Slippery)
+            {
+                hasSlipperySurrounding = true;
+                _targetTile = surroundingTile;
+                break;
+            }
+        }
+        if (!hasSlipperySurrounding)
+        {
+            Die();
+            return true;
+        }
         return false;
     }
 
@@ -91,6 +121,10 @@ public class Enemy : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (!_drawGizmos)
+        {
+            return;
+        }
         Gizmos.color = Color.red;
         Gizmos.DrawLine(transform.position, transform.position + transform.right * 4.0f);
         Gizmos.color = Color.green;
@@ -171,7 +205,8 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
-        Destroy(gameObject);
+        _captured = true;
+        // Destroy(gameObject);
     }
     
     public void Init(EnemyConfig enemyConfig)

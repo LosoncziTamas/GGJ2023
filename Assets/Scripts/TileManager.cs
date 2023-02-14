@@ -42,6 +42,16 @@ public class TileManager : MonoBehaviour
         }
     }
 
+    public Tile GetTileByCoordinates(Vector2Int coords)
+    {
+        var outOfBounds = coords.y is < 0 or >= RowCount || coords.x is < 0 or >= ColumnCount;
+        if (outOfBounds)
+        {
+            return null;
+        }
+        return _tiles[coords.y * ColumnCount + coords.x];
+    }
+
     public List<Tile> GetTileByType(TileType type)
     {
         var result = new List<Tile>();
@@ -53,6 +63,16 @@ public class TileManager : MonoBehaviour
             }
         }
         return result;
+    }
+
+    public List<Tile> GetSurroundingTiles(Tile tile)
+    {
+        var tileCoord = tile.Coordinates;
+        var tileBelow = GetTileByCoordinates(new Vector2Int(tileCoord.x, tileCoord.y - 1));
+        var tileAbove = GetTileByCoordinates(new Vector2Int(tileCoord.x, tileCoord.y + 1));
+        var tileLeft = GetTileByCoordinates(new Vector2Int(tileCoord.x - 1, tileCoord.y));
+        var tileRight = GetTileByCoordinates(new Vector2Int(tileCoord.x + 1, tileCoord.y));
+        return new List<Tile>() {tileAbove, tileBelow, tileLeft, tileRight};
     }
 
     private static bool IsWalkableTile(int rowIndex, int columnIndex)

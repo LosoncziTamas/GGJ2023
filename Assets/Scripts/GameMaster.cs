@@ -17,7 +17,7 @@ public class GameMaster : MonoBehaviour
 
     private TaskCompletionSource<GameResult> _gameCompletionSource;
 
-    public bool Running { get; private set; }
+    public bool Running { get; private set; } = true;
     public bool Initializing { get; private set; }
 
     private void Awake()
@@ -25,16 +25,11 @@ public class GameMaster : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         _player = FindObjectOfType<PlayerController>();
-    }
-
-    public Task<GameResult> StartGame()
-    {
-        _gameCompletionSource = new TaskCompletionSource<GameResult>();
+        yield return new WaitForSeconds(0.3f);
         StartFirstLevel();
-        return _gameCompletionSource.Task;
     }
 
     private void StartFirstLevel()

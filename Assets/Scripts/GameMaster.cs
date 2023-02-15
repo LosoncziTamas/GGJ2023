@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Configs;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class GameMaster : MonoBehaviour
     private TileSequenceTracker _tileSequenceTracker;
     private TileManager _tileManager;
     private Camera _camera;
+    private Image _redImage;
     
     public bool Running { get; private set; } = true;
     public bool Initializing { get; private set; }
@@ -25,6 +27,7 @@ public class GameMaster : MonoBehaviour
     {
         Instance = this;
         _camera = Camera.main;
+        _redImage = _camera.GetComponentInChildren<Image>();
         _tileSequenceTracker = FindObjectOfType<TileSequenceTracker>();
         _tileManager = FindObjectOfType<TileManager>();
     }
@@ -94,15 +97,7 @@ public class GameMaster : MonoBehaviour
             enemy.Init(enemyConfig);
         }
     }
-
-    private void OnGUI()
-    {
-        if (GUILayout.Button("Shake camera"))
-        {
-            _camera.DOShakePosition(0.3f, 1.0f);
-        }
-    }
-
+    
     public void LifeLost()
     {
         if (!Running)
@@ -111,7 +106,8 @@ public class GameMaster : MonoBehaviour
         }
         Running = false;
         _player.Die();
-        _camera.DOShakePosition(0.3f);
+        _camera.DOShakePosition(0.3f, 0.5f);
+        DOTween.Sequence(_redImage.DOFade(0.1f, 0.3f)).Insert(0.3f, _redImage.DOFade(0.0f, 0.3f));
         const float dieDelay = 2.0f;
         StartCoroutine(ClearLevelAndStart(_currentLevelConfig, dieDelay));
     }

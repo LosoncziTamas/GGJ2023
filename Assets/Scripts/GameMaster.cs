@@ -10,7 +10,6 @@ public class GameMaster : MonoBehaviour
 {
     public static GameMaster Instance;
     
-    [SerializeField] private Enemy _enemyPrefab;
     [SerializeField] private List<LevelConfig> _levels;
 
     private LevelConfig _currentLevelConfig;
@@ -93,7 +92,7 @@ public class GameMaster : MonoBehaviour
         Running = true;
         foreach (var enemyConfig in levelConfig.Enemies)
         {
-            var enemy = Instantiate(_enemyPrefab, enemyConfig.SpawnLocation, Quaternion.identity);
+            var enemy = Instantiate(enemyConfig.EnemyPrefab, enemyConfig.SpawnLocation, Quaternion.identity);
             enemy.Init(enemyConfig);
         }
     }
@@ -142,7 +141,11 @@ public class GameMaster : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // TODO: modal or exit
+            Application.Quit();
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(ClearLevelAndStart(_levels[0]));
         }
     }
 

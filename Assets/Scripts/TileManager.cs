@@ -10,6 +10,8 @@ public class TileManager : MonoBehaviour
 
     private Tile[] _tiles;
 
+    public int StartSlipperyTileCount { get; private set; }
+
     private void Awake()
     {
         if (_tiles == null || _tiles.Length == 0)
@@ -35,6 +37,10 @@ public class TileManager : MonoBehaviour
                 var y = startY + rowIndex * offsetY;
                 tile.transform.position = new Vector3(x, y, offsetZ);
                 var type = IsWalkableTile(rowIndex, columnIndex) ? TileType.Walkable : TileType.Slippery;
+                if (type == TileType.Slippery)
+                {
+                    StartSlipperyTileCount++;
+                }
                 var coordinates = new Vector2Int(columnIndex, rowIndex);
                 tile.Init(type, coordinates);
                 _tiles[rowIndex * ColumnCount + columnIndex] = tile;

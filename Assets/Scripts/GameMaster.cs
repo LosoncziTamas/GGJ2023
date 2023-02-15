@@ -13,6 +13,7 @@ public class GameMaster : MonoBehaviour
     private LevelConfig _currentLevelConfig;
     private PlayerController _player;
     private TileSequenceTracker _tileSequenceTracker;
+    private TileManager _tileManager;
     
     public bool Running { get; private set; } = true;
     public bool Initializing { get; private set; }
@@ -21,6 +22,7 @@ public class GameMaster : MonoBehaviour
     {
         Instance = this;
         _tileSequenceTracker = FindObjectOfType<TileSequenceTracker>();
+        _tileManager = FindObjectOfType<TileManager>();
     }
 
     private void OnEnable()
@@ -50,7 +52,7 @@ public class GameMaster : MonoBehaviour
         const float rootSpawnAnimLength = 1.0f;
         yield return new WaitForSeconds(rootSpawnAnimLength);
         var enemies = Enemy.Instances;
-        var levelCompleted = true;
+        var levelCompleted = false; // true
         foreach (var enemy in enemies)
         {
             if (!enemy.Idle)
@@ -62,6 +64,13 @@ public class GameMaster : MonoBehaviour
         if (levelCompleted)
         {
             MoveToNextLevel();
+        }
+        else
+        {
+            var startTileCount = _tileManager.StartSlipperyTileCount; // 120
+            var nowTileCount = _tileManager.GetTileByType(TileType.Slippery).Count; // 0
+            var scale = 1.0f - ((float)nowTileCount / startTileCount);
+            _player.RaiseSpeed(scale);
         }
     }
 
@@ -91,24 +100,21 @@ public class GameMaster : MonoBehaviour
         Running = false;
         _player.Die();
         const float dieDelay = 2.0f;
-        StartCoroutine(ClearLevelAndStart(_currentLevelConfig, dieDelay, resetPlayer: true));
+        StartCoroutine(ClearLevelAndStart(_currentLevelConfig, dieDelay));
     }
 
-    private IEnumerator ClearLevelAndStart(LevelConfig levelConfig, float delay = 0, bool resetPlayer = true)
+    private IEnumerator ClearLevelAndStart(LevelConfig levelConfig, float delay = 0)
     {
         yield return new WaitForSeconds(delay);
-        yield return ClearLevel(resetPlayer);
+        yield return ClearLevel();
         InitLevel(levelConfig);
     }
 
-    private IEnumerator ClearLevel(bool resetPlayer)
+    private IEnumerator ClearLevel()
     {
         Initializing = true;
         var allTiles = FindObjectsOfType<Tile>();
-        if (resetPlayer)
-        {
-            _player.ResetToDefault();
-        }
+        _player.ResetToDefault();
         _tileSequenceTracker.DestroyRoots();
         var enemies = Enemy.Instances;
         foreach (var enemy in enemies)
@@ -138,12 +144,12 @@ public class GameMaster : MonoBehaviour
         if (currentLevelIndex < _levels.Count - 1)
         {
             var nextLevel = _levels[currentLevelIndex + 1];
-            StartCoroutine(ClearLevelAndStart(nextLevel, resetPlayer: false));
+            StartCoroutine(ClearLevelAndStart(nextLevel));
         }
         else
         {
             Debug.Log("No more levels");
-            StartCoroutine(ClearLevel(resetPlayer: false));
+            StartCoroutine(ClearLevel());
         }
     }
 }

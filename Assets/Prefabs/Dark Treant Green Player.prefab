@@ -4738,7 +4738,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 5254aba007b02554ca6585c537749639, type: 2}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5525,6 +5524,7 @@ MonoBehaviour:
   _animationAndAudioController: {fileID: 3278369466101027867}
   _tileSequenceTracker: {fileID: 2912905698676376615}
   _gameConfig: {fileID: 11400000, guid: c87358d4127d34163befe01fd777a1fb, type: 2}
+  _aura: {fileID: 8473760833168528211}
 --- !u!65 &8473760833176746482
 BoxCollider:
   m_ObjectHideFlags: 0

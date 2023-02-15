@@ -9,10 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c62ed99aaa234490aacee066e071704f, type: 3}
-  m_Name: Game Config
+  m_Script: {fileID: 11500000, guid: 92e96a5151dd496e9be07c85656330d1, type: 3}
+  m_Name: Empty Level
   m_EditorClassIdentifier: 
-  TimeBetweenTrailSpawn: 0.14
-  EnemyMaxSpeed: 2.3
-  PlayerAdditionalMaxSpeed: 2.6
-  PlayerStarterMaxSpeed: 4.6
+  Enemies: []

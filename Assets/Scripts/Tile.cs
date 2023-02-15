@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 
 public class Tile : MonoBehaviour
@@ -11,7 +10,6 @@ public class Tile : MonoBehaviour
     [SerializeField] private Material _enemyHighLight;
     [SerializeField] private Material _capturingMaterial;
     [SerializeField] private MeshRenderer _renderer;
-    [SerializeField] private bool _drawGizmos;
 
     private TileType _originalType;
     private Transform _transform;
@@ -89,14 +87,4 @@ public class Tile : MonoBehaviour
         TileType = TileType.Walkable;
         SetColors();
     }
-
-    private void OnDrawGizmos()
-    {
-        if (_drawGizmos)
-        {
-            Handles.Label(Center, $"{Coordinates.x} {Coordinates.y}");
-        }
-    }
-
-    public bool OriginallySlippery() => _originalType == TileType.Slippery;
 }

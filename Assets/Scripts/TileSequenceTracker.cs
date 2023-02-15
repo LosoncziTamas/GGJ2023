@@ -72,7 +72,6 @@ public class TileSequenceTracker : MonoBehaviour
         {
             capturedTile.MarkCaptured();
         }
-
         if (capturedTiles.Count > 0)
         {
             OnTilesCaptured?.Invoke();
@@ -220,11 +219,6 @@ public class TileSequenceTracker : MonoBehaviour
             Destroy(root, 0.45f);
         }
         _roots.Clear();
-    }
-
-    private bool IsOddNumberOfTiles(List<Tile> tiles)
-    {
-        return tiles.Count % 2 != 0;
     }
 
     private bool IsEvenNumberOfTiles(List<Tile> tiles)

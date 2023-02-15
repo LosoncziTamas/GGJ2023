@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Configs;
+using DG.Tweening;
 using Gui;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerAnimationAndAudioController _animationAndAudioController;
     [SerializeField] private TileSequenceTracker _tileSequenceTracker;
     [SerializeField] private GameConfig _gameConfig;
+    [SerializeField] private ParticleSystem _aura;
 
     private Rect _allowedArea = new(-8.5f, -5f, 17f, 10f);
     private bool _isMoving;    
@@ -17,25 +20,51 @@ public class PlayerController : MonoBehaviour
     private Vector3? _slidingVelocity;
     private Vector3 _velocity;
     private Vector3 _startPosition;
+    private Vector3 _startScale;
+    private Transform _transform;
+    private float _speed;
     
     public bool IsSliding => _slidingVelocity.HasValue;
 
     public void ResetToDefault()
     {
+        StopAllCoroutines();
+        _speed = _gameConfig.PlayerStarterMaxSpeed;
         _targetTile = null;
         _slidingVelocity = null;
         _velocity = Vector3.zero;
-        transform.position = _startPosition;
         _isMoving = false;
         _trail.enabled = false;
-        StopAllCoroutines();
         _animationAndAudioController.Stop();
+        StartCoroutine(DoRepositionAnim());
+    }
+
+    public void RaiseSpeed(float scale)
+    {
+        _speed = _gameConfig.PlayerStarterMaxSpeed + _gameConfig.PlayerAdditionalMaxSpeed * scale;
+    }
+
+    private IEnumerator DoRepositionAnim()
+    {
+        _aura.gameObject.SetActive(false);
+        yield return _transform.DOScale(Vector3.zero, 0.3f).WaitForCompletion();
+        _transform.position = _startPosition;
+        yield return _transform.DOScale(_startScale, 0.3f).WaitForCompletion();
+        _aura.gameObject.SetActive(true);
         enabled = true;
     }
     
     private void Start()
     {
-        _startPosition = transform.position;
+        _transform = transform;
+        _startScale = _transform.localScale;
+        _startPosition = _transform.position;
+        _speed = _gameConfig.PlayerStarterMaxSpeed;
+    }
+
+    private void OnGUI()
+    {
+        GUILayout.Label("Speed " + _speed);
     }
 
     private void Update()
@@ -72,7 +101,7 @@ public class PlayerController : MonoBehaviour
         var playerInput = ReadInput();
         if (!_slidingVelocity.HasValue)
         {
-            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _gameConfig.PlayerMaxSpeed;
+            _velocity = new Vector3(playerInput.x, 0f, playerInput.y) * _speed;
         }
         UpdateAnimation();
         var desiredDisplacement = _velocity * Time.deltaTime;
@@ -161,7 +190,7 @@ public class PlayerController : MonoBehaviour
                 _isMoving = false;
                 yield break;
             }
-            var newPos = Vector3.MoveTowards(transform.position, targetPosition, _gameConfig.PlayerMaxSpeed * Time.deltaTime);
+            var newPos = Vector3.MoveTowards(transform.position, targetPosition, _speed * Time.deltaTime);
             transform.position = newPos;
             yield return null;
         }
@@ -250,7 +279,7 @@ public class PlayerController : MonoBehaviour
     {
         newTile.MarkCapturing();
         _tileSequenceTracker.BeginTracking(oldTile, newTile);
-        _slidingVelocity = _velocity.normalized * _gameConfig.PlayerMaxSpeed;
+        _slidingVelocity = _velocity.normalized * _speed;
         _trail.enabled = true;
     }
 

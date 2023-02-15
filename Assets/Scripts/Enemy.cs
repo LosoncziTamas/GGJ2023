@@ -209,7 +209,7 @@ public class Enemy : MonoBehaviour
     public void ClearFromLevel()
     {
         _isIdle = true;
-        _transform.DOScale(Vector3.zero, 0.4f).SetEase(Ease.InOutSine);
+        _transform.DOScale(Vector3.zero, 0.3f).SetEase(Ease.InOutSine);
         Destroy(gameObject, 0.4f);
     }
 

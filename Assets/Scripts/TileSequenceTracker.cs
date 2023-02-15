@@ -216,7 +216,7 @@ public class TileSequenceTracker : MonoBehaviour
         foreach (var root in _roots)
         {
             CreateRootSpawnAnim(root, root.transform.position.z + 1.0f);
-            Destroy(root, 0.45f);
+            Destroy(root, 0.6f);
         }
         _roots.Clear();
     }

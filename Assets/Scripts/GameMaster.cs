@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Configs;
@@ -16,8 +15,8 @@ public class GameMaster : MonoBehaviour
     private PlayerController _player;
     private TileSequenceTracker _tileSequenceTracker;
     private TileManager _tileManager;
-    private Camera _camera;
-    private Image _redImage;
+    [SerializeField] private Camera _camera;
+    [SerializeField] private Image _redImage;
     
     public bool Running { get; private set; } = true;
     public bool Initializing { get; private set; }
@@ -25,8 +24,6 @@ public class GameMaster : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        _camera = Camera.main;
-        _redImage = _camera.GetComponentInChildren<Image>();
         _tileSequenceTracker = FindObjectOfType<TileSequenceTracker>();
         _tileManager = FindObjectOfType<TileManager>();
     }

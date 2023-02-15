@@ -1735,6 +1735,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c76677c403a9c4156975f2632f545f1c, type: 2}
   - {fileID: 11400000, guid: 050a759a31b414465afa7e00b544d3ab, type: 2}
   - {fileID: 11400000, guid: 1f683e00576704d0c9728c3b8b431d61, type: 2}
+  _camera: {fileID: 963194227}
+  _redImage: {fileID: 48997423}
 --- !u!4 &734145622
 Transform:
   m_ObjectHideFlags: 0

@@ -79,15 +79,7 @@ public class PlayerAnimationAndAudioController : MonoBehaviour
     [UsedImplicitly]
     public void OnStep()
     {
-        AudioClip clip = null;
-        if (_playerController.IsSliding)
-        {
-            clip = _woodHitAudioClip;
-        }
-        else
-        {
-            clip = _stepAudioClips.GetRandom();
-        }
+        var clip = _stepAudioClips.GetRandom();
         _stepsAudioSource.clip = clip;
         _stepsAudioSource.Play();
     }
@@ -96,6 +88,12 @@ public class PlayerAnimationAndAudioController : MonoBehaviour
     {
         _casualAudioSource.clip = _dieAudioClip;
         _casualAudioSource.Play();
+    }
+
+    public void PlayFallSound()
+    {
+        _stepsAudioSource.clip = _woodHitAudioClip;
+        _stepsAudioSource.Play();
     }
 
     public void PlayLaughSound()

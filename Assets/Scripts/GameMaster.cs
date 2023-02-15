@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Configs;
+using DG.Tweening;
 using UnityEngine;
 
 public class GameMaster : MonoBehaviour
@@ -14,6 +16,7 @@ public class GameMaster : MonoBehaviour
     private PlayerController _player;
     private TileSequenceTracker _tileSequenceTracker;
     private TileManager _tileManager;
+    private Camera _camera;
     
     public bool Running { get; private set; } = true;
     public bool Initializing { get; private set; }
@@ -21,6 +24,7 @@ public class GameMaster : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        _camera = Camera.main;
         _tileSequenceTracker = FindObjectOfType<TileSequenceTracker>();
         _tileManager = FindObjectOfType<TileManager>();
     }
@@ -52,7 +56,7 @@ public class GameMaster : MonoBehaviour
         const float rootSpawnAnimLength = 1.0f;
         yield return new WaitForSeconds(rootSpawnAnimLength);
         var enemies = Enemy.Instances;
-        var levelCompleted = false; // true
+        var levelCompleted = true;
         foreach (var enemy in enemies)
         {
             if (!enemy.Idle)
@@ -67,8 +71,8 @@ public class GameMaster : MonoBehaviour
         }
         else
         {
-            var startTileCount = _tileManager.StartSlipperyTileCount; // 120
-            var nowTileCount = _tileManager.GetTileByType(TileType.Slippery).Count; // 0
+            var startTileCount = _tileManager.StartSlipperyTileCount;
+            var nowTileCount = _tileManager.GetTileByType(TileType.Slippery).Count; 
             var scale = 1.0f - ((float)nowTileCount / startTileCount);
             _player.RaiseSpeed(scale);
         }
@@ -91,6 +95,14 @@ public class GameMaster : MonoBehaviour
         }
     }
 
+    private void OnGUI()
+    {
+        if (GUILayout.Button("Shake camera"))
+        {
+            _camera.DOShakePosition(0.3f, 1.0f);
+        }
+    }
+
     public void LifeLost()
     {
         if (!Running)
@@ -99,6 +111,7 @@ public class GameMaster : MonoBehaviour
         }
         Running = false;
         _player.Die();
+        _camera.DOShakePosition(0.3f);
         const float dieDelay = 2.0f;
         StartCoroutine(ClearLevelAndStart(_currentLevelConfig, dieDelay));
     }

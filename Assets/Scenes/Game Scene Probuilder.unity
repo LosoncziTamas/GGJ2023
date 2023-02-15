@@ -1573,7 +1573,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemyPrefab: {fileID: 389744285381146538, guid: d417d4fb0041a42c2b04c9444251bad5, type: 3}
   _levels:
-  - {fileID: 11400000, guid: 53b0b798162ed4ec5ab22bdb47c66c13, type: 2}
   - {fileID: 11400000, guid: 57222bece5331498db5b9b71fe17e67d, type: 2}
   - {fileID: 11400000, guid: c76677c403a9c4156975f2632f545f1c, type: 2}
   - {fileID: 11400000, guid: 050a759a31b414465afa7e00b544d3ab, type: 2}

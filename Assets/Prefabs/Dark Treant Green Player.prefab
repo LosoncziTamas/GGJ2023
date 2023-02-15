@@ -5554,10 +5554,10 @@ MonoBehaviour:
   _stepAudioClips:
   - {fileID: 8300000, guid: 9fb5d8881bba84aaf86ac1c7752cd072, type: 3}
   - {fileID: 8300000, guid: 8a1736d3922a74455be8e34f8a1331af, type: 3}
-  _laughAudioClip: {fileID: 8300000, guid: ad711c143dd5142c7a759f54e1de2449, type: 3}
-  _dieAudioClip: {fileID: 0}
+  _laughAudioClip: {fileID: 8300000, guid: 21fb7470929f945059095c69e882912c, type: 3}
+  _dieAudioClip: {fileID: 8300000, guid: 76935bac839d247609a024404700c49d, type: 3}
   _impactAudioClip: {fileID: 8300000, guid: b6e8b46122d86470ebb210b571a85f48, type: 3}
-  _woodHitAudioClip: {fileID: 8300000, guid: af91e94368e0a4a0f9c1bd321fd34d3e, type: 3}
+  _woodHitAudioClip: {fileID: 8300000, guid: 885f022a29f8c4baf9ec7c98421cd613, type: 3}
   _stepsAudioSource: {fileID: 6325543185961961286}
   _casualAudioSource: {fileID: 4392765878065245088}
   _impactAudioSource: {fileID: 5485095793364658248}

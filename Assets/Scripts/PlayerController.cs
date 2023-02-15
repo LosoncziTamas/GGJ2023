@@ -1,9 +1,6 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Configs;
 using DG.Tweening;
-using Gui;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -60,11 +57,6 @@ public class PlayerController : MonoBehaviour
         _startScale = _transform.localScale;
         _startPosition = _transform.position;
         _speed = _gameConfig.PlayerStarterMaxSpeed;
-    }
-
-    private void OnGUI()
-    {
-        GUILayout.Label("Speed " + _speed);
     }
 
     private void Update()
